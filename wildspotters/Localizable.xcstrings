@@ -1,6 +1,40 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "accessibility.speciesHint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double-tap to select this species"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dubbeltik om deze soort te selecteren"
+          }
+        }
+      }
+    },
+    "accessibility.videoPlayer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wildlife video clip"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spot video"
+          }
+        }
+      }
+    },
     "app.name" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9,104 +43,11 @@
             "state" : "translated",
             "value" : "Wildspotters"
           }
-        }
-      }
-    },
-    "login.subtitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
+        },
+        "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Identify wildlife from video"
-          }
-        }
-      }
-    },
-    "login.username" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Username"
-          }
-        }
-      }
-    },
-    "login.password" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Password"
-          }
-        }
-      }
-    },
-    "login.button" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Log In"
-          }
-        }
-      }
-    },
-    "identification.question" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What species is this?"
-          }
-        }
-      }
-    },
-    "identification.loading" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loading video..."
-          }
-        }
-      }
-    },
-    "identification.empty.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All caught up!"
-          }
-        }
-      }
-    },
-    "identification.empty.message" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No new videos to identify right now."
-          }
-        }
-      }
-    },
-    "identification.empty.button" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check Again"
+            "value" : "Wildspotters"
           }
         }
       }
@@ -119,6 +60,12 @@
             "state" : "translated",
             "value" : "Logout"
           }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uitloggen"
+          }
         }
       }
     },
@@ -130,38 +77,11 @@
             "state" : "translated",
             "value" : "Retry"
           }
-        }
-      }
-    },
-    "error.invalidResponse" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
+        },
+        "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invalid server response"
-          }
-        }
-      }
-    },
-    "error.unauthorized" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Session expired. Please log in again."
-          }
-        }
-      }
-    },
-    "error.rateLimited" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Too many requests. Please wait a moment."
+            "value" : "Opnieuw proberen"
           }
         }
       }
@@ -174,16 +94,11 @@
             "state" : "translated",
             "value" : "This spot is no longer available."
           }
-        }
-      }
-    },
-    "error.serverError" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
+        },
+        "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Server error (%d)"
+            "value" : "Deze spot is niet meer beschikbaar."
           }
         }
       }
@@ -195,6 +110,284 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unexpected response format"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onverwacht antwoordformaat"
+          }
+        }
+      }
+    },
+    "error.invalidCredentials" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid email or password."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ongeldig e-mailadres of wachtwoord."
+          }
+        }
+      }
+    },
+    "error.invalidResponse" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid server response"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ongeldig serverantwoord"
+          }
+        }
+      }
+    },
+    "error.networkOffline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No internet connection. Please check your network and try again."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen internetverbinding. Controleer je netwerk en probeer het opnieuw."
+          }
+        }
+      }
+    },
+    "error.rateLimited" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Too many requests. Please wait a moment."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te veel verzoeken. Even geduld."
+          }
+        }
+      }
+    },
+    "error.serverError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server error (%d)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serverfout (%d)"
+          }
+        }
+      }
+    },
+    "error.unauthorized" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Session expired. Please log in again."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sessie verlopen. Log opnieuw in."
+          }
+        }
+      }
+    },
+    "identification.empty.button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check Again"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opnieuw controleren"
+          }
+        }
+      }
+    },
+    "identification.empty.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No new videos to identify right now."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er zijn momenteel geen nieuwe video's om te identificeren."
+          }
+        }
+      }
+    },
+    "identification.empty.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All caught up!"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Helemaal bij!"
+          }
+        }
+      }
+    },
+    "identification.loading" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading video..."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video laden..."
+          }
+        }
+      }
+    },
+    "identification.question" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What species is this?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welke diersoort is dit?"
+          }
+        }
+      }
+    },
+    "identification.submitting" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Submitting identification..."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identificatie verzenden..."
+          }
+        }
+      }
+    },
+    "login.button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log In"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inloggen"
+          }
+        }
+      }
+    },
+    "login.password" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wachtwoord"
+          }
+        }
+      }
+    },
+    "login.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Can you identify this animal?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weet jij welk dier dit is?"
+          }
+        }
+      }
+    },
+    "login.username" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E-mail"
           }
         }
       }

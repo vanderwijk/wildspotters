@@ -4,7 +4,7 @@ final class APIClient: Sendable {
 
     static let shared = APIClient()
 
-    private let baseURL = URL(string: "https://wildspotters.local/wp-json/wildspotters/v1")!
+    private let baseURL = URL(string: "https://wildspotters.nl/wp-json/wildspotters/v1")!
     private let session: URLSession
     private let decoder: JSONDecoder
 
@@ -18,8 +18,18 @@ final class APIClient: Sendable {
     // MARK: - Auth
 
     func login(username: String, password: String) async throws -> LoginResponse {
-        let body = ["username": username, "password": password]
-        return try await post("login", body: body)
+        var request = URLRequest(url: baseURL.appendingPathComponent("login"))
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+
+        var components = URLComponents()
+        components.queryItems = [
+            URLQueryItem(name: "username", value: username),
+            URLQueryItem(name: "password", value: password)
+        ]
+        request.httpBody = components.percentEncodedQuery?.data(using: .utf8)
+
+        return try await perform(request, isLogin: true)
     }
 
     // MARK: - Spots
@@ -71,7 +81,7 @@ final class APIClient: Sendable {
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     }
 
-    private func perform<T: Decodable>(_ request: URLRequest) async throws -> T {
+    private func perform<T: Decodable>(_ request: URLRequest, isLogin: Bool = false) async throws -> T {
         let data: Data
         let response: URLResponse
 
@@ -89,7 +99,10 @@ final class APIClient: Sendable {
         case 200...299:
             break
         case 401:
-            await AuthManager.shared.handleUnauthorized()
+            if isLogin {
+                throw APIError.invalidCredentials
+            }
+            AuthManager.shared.logout()
             throw APIError.unauthorized
         case 409:
             let message = try? decoder.decode(ServerError.self, from: data).message
@@ -117,4 +130,6 @@ private struct ServerError: Decodable {
 
 private struct SuccessResponse: Decodable {
     let success: Bool
+    let action: String
 }
+

@@ -18,7 +18,14 @@ struct IdentificationView: View {
                     spotContent(spot)
                         .transition(.opacity)
                 } else if viewModel.isEmpty {
-                    emptyContent
+                    ScrollView {
+                        emptyContent
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .padding(.top, 120)
+                    }
+                    .refreshable {
+                        await viewModel.loadNextSpot()
+                    }
                 } else if let error = viewModel.errorMessage {
                     errorContent(error)
                 }
@@ -37,7 +44,7 @@ struct IdentificationView: View {
                 }
             }
             .task {
-                await viewModel.loadNextSpot()
+                await viewModel.loadInitial()
             }
             .animation(.easeInOut(duration: 0.3), value: viewModel.currentSpot?.id)
         }
@@ -47,33 +54,37 @@ struct IdentificationView: View {
 
     private func spotContent(_ spot: Spot) -> some View {
         VStack(spacing: 0) {
-            VideoPlayerView(url: URL(string: spot.videoURL)!)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .padding(.horizontal)
-                .frame(maxHeight: .infinity)
+            VideoPlayerView(url: spot.videoURL)
+                .aspectRatio(16/9, contentMode: .fit)
+                .accessibilityLabel(String(localized: "accessibility.videoPlayer"))
 
-            VStack(spacing: 12) {
-                Text("identification.question", tableName: nil, bundle: .main, comment: "Species question label")
-                    .font(.headline)
-                    .foregroundStyle(.white)
+            ScrollView {
+                VStack(spacing: 12) {
+                    Text("identification.question")
+                        .font(.headline)
+                        .foregroundStyle(.white)
 
-                SpeciesSelectionView(
-                    species: spot.speciesOptions,
-                    isDisabled: viewModel.isSubmitting
-                ) { selected in
-                    Task {
-                        await viewModel.submitIdentification(speciesID: selected.id)
+                    SpeciesSelectionView(
+                        species: spot.speciesOptions,
+                        catalog: viewModel.catalogStore.species,
+                        isDisabled: viewModel.isSubmitting
+                    ) { selected in
+                        Task {
+                            await viewModel.submitIdentification(speciesID: selected.id)
+                        }
+                    }
+
+                    if viewModel.isSubmitting {
+                        ProgressView()
+                            .tint(.white)
+                            .transition(.opacity)
+                            .accessibilityLabel(String(localized: "identification.submitting"))
                     }
                 }
-
-                if viewModel.isSubmitting {
-                    ProgressView()
-                        .tint(.white)
-                        .transition(.opacity)
-                }
+                .padding(.vertical, 16)
             }
-            .padding(.vertical, 16)
         }
+
     }
 
     private var emptyContent: some View {
@@ -81,12 +92,13 @@ struct IdentificationView: View {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: 48))
                 .foregroundStyle(Color("BrandLightGreen"))
+                .accessibilityHidden(true)
 
-            Text("identification.empty.title", tableName: nil, bundle: .main, comment: "Empty state title")
+            Text("identification.empty.title")
                 .font(.title2.bold())
                 .foregroundStyle(.white)
 
-            Text("identification.empty.message", tableName: nil, bundle: .main, comment: "Empty state message")
+            Text("identification.empty.message")
                 .foregroundStyle(Color("BrandLightGreen").opacity(0.8))
 
             Button(String(localized: "identification.empty.button")) {
@@ -102,6 +114,7 @@ struct IdentificationView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.largeTitle)
                 .foregroundStyle(Color("BrandLightGreen"))
+                .accessibilityHidden(true)
 
             Text(message)
                 .foregroundStyle(Color("BrandLightGreen").opacity(0.8))

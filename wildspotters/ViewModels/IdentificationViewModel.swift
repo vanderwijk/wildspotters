@@ -1,4 +1,4 @@
-import Foundation
+import UIKit
 import Combine
 
 @MainActor
@@ -10,7 +10,14 @@ final class IdentificationViewModel: ObservableObject {
     @Published private(set) var isEmpty = false
     @Published private(set) var errorMessage: String?
 
+    let catalogStore = CatalogStore.shared
     private let apiClient = APIClient.shared
+
+    func loadInitial() async {
+        async let catalogRefresh: () = catalogStore.refresh()
+        async let spotLoad: () = loadNextSpot()
+        _ = await (catalogRefresh, spotLoad)
+    }
 
     func loadNextSpot() async {
         errorMessage = nil
@@ -36,6 +43,7 @@ final class IdentificationViewModel: ObservableObject {
 
         do {
             try await apiClient.submitIdentification(identification)
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
             currentSpot = nil
             await loadNextSpot()
         } catch {

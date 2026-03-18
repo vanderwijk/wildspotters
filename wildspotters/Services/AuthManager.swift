@@ -1,4 +1,3 @@
-import Foundation
 import Combine
 
 @MainActor
@@ -19,11 +18,6 @@ final class AuthManager: ObservableObject {
     }
 
     func logout() {
-        KeychainService.deleteToken()
-        isAuthenticated = false
-    }
-
-    func handleUnauthorized() {
         KeychainService.deleteToken()
         isAuthenticated = false
     }

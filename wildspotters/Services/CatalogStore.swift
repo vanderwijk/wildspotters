@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 struct CatalogSpecies: Codable, Identifiable {
     let id: Int
@@ -6,18 +7,12 @@ struct CatalogSpecies: Codable, Identifiable {
     let scientificName: String?
     let englishName: String?
     let imageURL: URL?
-    let imageSizeURL: URL?
 
     enum CodingKeys: String, CodingKey {
         case id, name
         case scientificName = "scientific_name"
         case englishName = "english_name"
         case imageURL = "image_url"
-        case imageSizeURL = "image_size_url"
-    }
-
-    var displayImageURL: URL? {
-        imageSizeURL ?? imageURL
     }
 
     var displayName: String {

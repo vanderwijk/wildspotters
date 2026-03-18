@@ -3,30 +3,69 @@ import SwiftUI
 struct SpeciesSelectionView: View {
 
     let species: [Species]
+    let catalog: [Int: CatalogSpecies]
     let isDisabled: Bool
     let onSelect: (Species) -> Void
 
+    private let columns = [
+        GridItem(.adaptive(minimum: 90), spacing: 8)
+    ]
+
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 10) {
-                ForEach(species) { item in
-                    Button {
-                        onSelect(item)
-                    } label: {
-                        Text(item.name)
-                            .font(.subheadline.weight(.medium))
+        LazyVGrid(columns: columns, spacing: 12) {
+            ForEach(species) { item in
+                let catalogItem = catalog[item.id]
+                Button {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    onSelect(item)
+                } label: {
+                    VStack(spacing: 4) {
+                        if let imageURL = catalogItem?.imageURL {
+                            AsyncImage(url: imageURL) { phase in
+                                switch phase {
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                case .failure:
+                                    speciesPlaceholder
+                                default:
+                                    ProgressView()
+                                        .frame(height: 70)
+                                }
+                            }
+                            .frame(width: 80, height: 70)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        } else {
+                            speciesPlaceholder
+                        }
+
+                        Text(item.displayName)
+                            .font(.caption2)
                             .foregroundStyle(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
-                            .background(Color("BrandGreen").opacity(0.6))
-                            .clipShape(Capsule())
+                            .lineLimit(2)
+                            .multilineTextAlignment(.center)
+                            .frame(height: 28)
                     }
-                    .buttonStyle(.plain)
-                    .disabled(isDisabled)
-                    .opacity(isDisabled ? 0.5 : 1)
+                    .frame(maxWidth: .infinity)
                 }
+                .buttonStyle(.plain)
+                .disabled(isDisabled)
+                .opacity(isDisabled ? 0.5 : 1)
+                .accessibilityLabel(item.displayName)
+                .accessibilityHint(String(localized: "accessibility.speciesHint"))
             }
-            .padding(.horizontal)
         }
+        .padding(.horizontal)
+    }
+
+    private var speciesPlaceholder: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(Color("BrandGreen").opacity(0.3))
+            .frame(width: 80, height: 70)
+            .overlay {
+                Image(systemName: "pawprint.fill")
+                    .foregroundStyle(Color("BrandLightGreen").opacity(0.5))
+            }
     }
 }

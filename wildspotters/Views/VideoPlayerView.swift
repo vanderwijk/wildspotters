@@ -21,8 +21,9 @@ struct VideoPlayerView: UIViewRepresentable {
 final class PlayerUIView: UIView {
 
     private var player: AVPlayer?
-    private var playerLayer: AVPlayerLayer?
     private var loopObserver: Any?
+    private var backgroundObserver: Any?
+    private var foregroundObserver: Any?
     private var currentURL: URL?
 
     override class var layerClass: AnyClass { AVPlayerLayer.self }
@@ -33,19 +34,47 @@ final class PlayerUIView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        avPlayerLayer.videoGravity = .resizeAspectFill
+        avPlayerLayer.videoGravity = .resizeAspect
         backgroundColor = .black
+        configureAudioSession()
+        observeAppLifecycle()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
+    private func configureAudioSession() {
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
+        } catch {
+            // Audio session config is best-effort; video still plays
+        }
+    }
+
+    private func observeAppLifecycle() {
+        backgroundObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didEnterBackgroundNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.player?.pause()
+        }
+
+        foregroundObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.willEnterForegroundNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.player?.play()
+        }
+    }
+
     func load(url: URL) {
         guard url != currentURL else { return }
         currentURL = url
 
-        cleanup()
+        cleanupPlayer()
 
         let item = AVPlayerItem(url: url)
         let newPlayer = AVPlayer(playerItem: item)
@@ -65,6 +94,18 @@ final class PlayerUIView: UIView {
     }
 
     func cleanup() {
+        cleanupPlayer()
+        if let observer = backgroundObserver {
+            NotificationCenter.default.removeObserver(observer)
+            backgroundObserver = nil
+        }
+        if let observer = foregroundObserver {
+            NotificationCenter.default.removeObserver(observer)
+            foregroundObserver = nil
+        }
+    }
+
+    private func cleanupPlayer() {
         player?.pause()
         if let observer = loopObserver {
             NotificationCenter.default.removeObserver(observer)

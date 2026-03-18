@@ -1,18 +1,14 @@
 import Foundation
 
-struct SpotResponse: Decodable, Sendable {
+struct SpotResponse: Decodable {
     let spot: Spot?
-    let empty: Bool?
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-
         if let empty = try container.decodeIfPresent(Bool.self, forKey: .empty), empty {
-            self.empty = true
-            self.spot = nil
+            spot = nil
         } else {
-            self.empty = false
-            self.spot = try Spot(from: decoder)
+            spot = try Spot(from: decoder)
         }
     }
 
@@ -21,14 +17,16 @@ struct SpotResponse: Decodable, Sendable {
     }
 }
 
-struct Spot: Codable, Sendable, Identifiable {
+struct Spot: Decodable, Identifiable {
     let id: Int
     let videoURL: URL
+    let location: SpotLocation?
     let speciesOptions: [Species]
 
     enum CodingKeys: String, CodingKey {
         case id
         case videoURL = "video_url"
+        case location
         case speciesOptions = "species_options"
     }
 
@@ -44,11 +42,35 @@ struct Spot: Codable, Sendable, Identifiable {
             )
         }
         videoURL = url
+        location = try container.decodeIfPresent(SpotLocation.self, forKey: .location)
         speciesOptions = try container.decode([Species].self, forKey: .speciesOptions)
     }
 }
 
-struct Species: Codable, Sendable, Identifiable, Hashable {
+struct SpotLocation: Decodable {
     let id: Int
     let name: String
+    let slug: String
+}
+
+struct Species: Decodable, Identifiable, Hashable {
+    let id: Int
+    let name: String
+    let scientificName: String?
+    let englishName: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case scientificName = "scientific_name"
+        case englishName = "english_name"
+    }
+
+    var displayName: String {
+        let preferredLanguage = Bundle.main.preferredLocalizations.first ?? "en"
+        if preferredLanguage.hasPrefix("nl") {
+            return name
+        }
+        return englishName ?? name
+    }
 }

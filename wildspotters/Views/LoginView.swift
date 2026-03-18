@@ -23,16 +23,13 @@ struct LoginView: View {
                         .frame(height: geometry.size.height * 0.12)
 
                     // Header
-                    VStack(spacing: 8) {
-                        Image(systemName: "binoculars.fill")
-                            .font(.system(size: 48))
-                            .foregroundStyle(Color("BrandGreen"))
+                    VStack(spacing: 12) {
+                        Image("Logo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: 280)
 
-                        Text("app.name", tableName: nil, bundle: .main, comment: "App name shown on login screen")
-                            .font(.largeTitle.bold())
-                            .foregroundStyle(Color("BrandDarkGreen"))
-
-                        Text("login.subtitle", tableName: nil, bundle: .main, comment: "Login screen subtitle")
+                        Text("login.subtitle")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -40,19 +37,22 @@ struct LoginView: View {
                     // Form fields
                     VStack(spacing: 12) {
                         TextField(String(localized: "login.username"), text: $username)
-                            .textContentType(.username)
+                            .textContentType(.emailAddress)
+                            .keyboardType(.emailAddress)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             .padding()
-                            .background(Color("BrandBeige"))
+                            .background(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("BrandLightGreen"), lineWidth: 1))
                             .onChange(of: username) { errorMessage = nil }
 
                         SecureField(String(localized: "login.password"), text: $password)
                             .textContentType(.password)
                             .padding()
-                            .background(Color("BrandBeige"))
+                            .background(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("BrandLightGreen"), lineWidth: 1))
                             .onChange(of: password) { errorMessage = nil }
                             .onSubmit { login() }
                     }
@@ -72,7 +72,7 @@ struct LoginView: View {
                                 ProgressView()
                                     .tint(.white)
                             } else {
-                                Text("login.button", tableName: nil, bundle: .main, comment: "Login button label")
+                                Text("login.button")
                             }
                         }
                         .frame(maxWidth: .infinity)
@@ -86,7 +86,7 @@ struct LoginView: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .background(Color(.systemBackground))
+        .background(Color("BrandBeige"))
         .animation(.default, value: errorMessage != nil)
     }
 
