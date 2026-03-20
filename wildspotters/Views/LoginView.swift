@@ -4,6 +4,7 @@ struct LoginView: View {
 
     @ObservedObject var authManager: AuthManager
     var onShowRegister: (() -> Void)? = nil
+    var successMessage: String? = nil
 
     @State private var username = ""
     @State private var password = ""
@@ -33,6 +34,15 @@ struct LoginView: View {
                         Text("login.subtitle")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
+                    }
+
+                    // Activation success message
+                    if let successMessage {
+                        Label(successMessage, systemImage: "checkmark.circle.fill")
+                            .foregroundStyle(Color("BrandGreen"))
+                            .font(.callout)
+                            .multilineTextAlignment(.center)
+                            .transition(.opacity)
                     }
 
                     // Form fields

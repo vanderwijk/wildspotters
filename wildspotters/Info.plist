@@ -9,5 +9,16 @@
 		<key>UIImageName</key>
 		<string>LaunchImage</string>
 	</dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>nl.wildspotters.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>wildspotters</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
