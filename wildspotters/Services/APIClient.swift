@@ -34,7 +34,7 @@ final class APIClient: Sendable {
 
     func forgotPassword(email: String) async throws {
         struct ForgotPasswordRequest: Encodable { let email: String }
-        struct ForgotPasswordResponse: Decodable { let success: Bool }
+        struct ForgotPasswordResponse: Decodable { let success: Bool? }
         let _: ForgotPasswordResponse = try await post("forgot-password", body: ForgotPasswordRequest(email: email))
     }
 
@@ -50,7 +50,7 @@ final class APIClient: Sendable {
                 case email, password
             }
         }
-        struct RegistrationResponse: Decodable { let success: Bool }
+        struct RegistrationResponse: Decodable { let success: Bool? }
         let _: RegistrationResponse = try await post(
             "register",
             body: RegistrationRequest(firstName: firstName, lastName: lastName, email: email, password: password)
@@ -83,7 +83,7 @@ final class APIClient: Sendable {
         var request = URLRequest(url: baseURL.appendingPathComponent(path))
         request.httpMethod = "GET"
         if authenticated { try applyAuth(&request) }
-        return try await perform(request)
+        return try await perform(request, authenticated: authenticated)
     }
 
     private func post<T: Decodable, B: Encodable>(
@@ -96,7 +96,7 @@ final class APIClient: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(body)
         if authenticated { try applyAuth(&request) }
-        return try await perform(request)
+        return try await perform(request, authenticated: authenticated)
     }
 
     private func applyAuth(_ request: inout URLRequest) throws {
@@ -106,7 +106,7 @@ final class APIClient: Sendable {
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     }
 
-    private func perform<T: Decodable>(_ request: URLRequest, isLogin: Bool = false) async throws -> T {
+    private func perform<T: Decodable>(_ request: URLRequest, isLogin: Bool = false, authenticated: Bool = false) async throws -> T {
         let data: Data
         let response: URLResponse
 
@@ -127,7 +127,9 @@ final class APIClient: Sendable {
             if isLogin {
                 throw APIError.invalidCredentials
             }
-            await MainActor.run { AuthManager.shared.logout() }
+            if authenticated {
+                await MainActor.run { AuthManager.shared.logout() }
+            }
             throw APIError.unauthorized
         case 403:
             throw APIError.notActivated

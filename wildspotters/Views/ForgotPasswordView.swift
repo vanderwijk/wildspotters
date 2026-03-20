@@ -49,7 +49,7 @@ struct ForgotPasswordView: View {
                     } else {
                         VStack(spacing: 12) {
                             TextField(String(localized: "login.username"), text: $email)
-                                .textContentType(.username)
+                                .textContentType(.emailAddress)
                                 .keyboardType(.emailAddress)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
