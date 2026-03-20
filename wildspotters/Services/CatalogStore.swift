@@ -38,12 +38,22 @@ final class CatalogStore: ObservableObject {
     private var etag: String?
     private let cacheURL: URL
     private let etagURL: URL
+    private let imagesCacheDirectory: URL
+    private let imageManifestURL: URL
 
     private init() {
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         cacheURL = caches.appendingPathComponent("species_catalog.json")
         etagURL = caches.appendingPathComponent("species_catalog_etag.txt")
+        imagesCacheDirectory = caches.appendingPathComponent("species_images", isDirectory: true)
+        imageManifestURL = caches.appendingPathComponent("species_images_manifest.json")
+        try? FileManager.default.createDirectory(at: imagesCacheDirectory, withIntermediateDirectories: true)
         loadFromDisk()
+    }
+
+    func localImageURL(for speciesID: Int) -> URL? {
+        let file = imagesCacheDirectory.appendingPathComponent("\(speciesID).jpg")
+        return FileManager.default.fileExists(atPath: file.path) ? file : nil
     }
 
     func refresh() async {
@@ -66,16 +76,60 @@ final class CatalogStore: ObservableObject {
             let catalog = try JSONDecoder().decode(CatalogResponse.self, from: data)
             species = Dictionary(uniqueKeysWithValues: catalog.species.map { ($0.id, $0) })
 
-            // Persist
+            // Persist catalog
             try? data.write(to: cacheURL)
             let newEtag = http.value(forHTTPHeaderField: "ETag")
             etag = newEtag
             if let newEtag {
                 try? newEtag.write(to: etagURL, atomically: true, encoding: .utf8)
             }
+
+            // Pre-fetch images that aren't cached yet
+            await prefetchImages(for: catalog.species)
         } catch {
             // Network failure — keep existing cached data
         }
+    }
+
+    private func prefetchImages(for speciesList: [CatalogSpecies]) async {
+        var manifest = loadImageManifest()
+
+        await withTaskGroup(of: (Int, String)?.self) { group in
+            for item in speciesList {
+                guard let remoteURL = item.imageURL else { continue }
+                let remoteURLString = remoteURL.absoluteString
+                let destination = imagesCacheDirectory.appendingPathComponent("\(item.id).jpg")
+                let cachedURLString = manifest[String(item.id)]
+                let fileExists = FileManager.default.fileExists(atPath: destination.path)
+
+                // Skip if already cached with the same URL
+                guard !fileExists || cachedURLString != remoteURLString else { continue }
+
+                group.addTask {
+                    guard let data = try? await URLSession.shared.data(from: remoteURL).0 else { return nil }
+                    try? data.write(to: destination)
+                    return (item.id, remoteURLString)
+                }
+            }
+
+            for await result in group {
+                guard let (speciesID, urlString) = result else { continue }
+                manifest[String(speciesID)] = urlString
+            }
+        }
+
+        saveImageManifest(manifest)
+    }
+
+    private func loadImageManifest() -> [String: String] {
+        guard let data = try? Data(contentsOf: imageManifestURL),
+              let manifest = try? JSONDecoder().decode([String: String].self, from: data) else { return [:] }
+        return manifest
+    }
+
+    private func saveImageManifest(_ manifest: [String: String]) {
+        guard let data = try? JSONEncoder().encode(manifest) else { return }
+        try? data.write(to: imageManifestURL)
     }
 
     private func loadFromDisk() {

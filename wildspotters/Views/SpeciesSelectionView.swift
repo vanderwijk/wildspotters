@@ -20,22 +20,10 @@ struct SpeciesSelectionView: View {
                     onSelect(item)
                 } label: {
                     VStack(spacing: 4) {
-                        if let imageURL = catalogItem?.imageURL {
-                            AsyncImage(url: imageURL) { phase in
-                                switch phase {
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-                                case .failure:
-                                    speciesPlaceholder
-                                default:
-                                    ProgressView()
-                                        .frame(height: 70)
-                                }
-                            }
-                            .frame(width: 80, height: 70)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        if catalogItem?.imageURL != nil {
+                            SpeciesImageView(speciesID: item.id, catalogItem: catalogItem)
+                                .frame(width: 80, height: 70)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
                         } else {
                             speciesPlaceholder
                         }
@@ -63,6 +51,43 @@ struct SpeciesSelectionView: View {
         RoundedRectangle(cornerRadius: 8)
             .fill(Color("BrandGreen").opacity(0.3))
             .frame(width: 80, height: 70)
+            .overlay {
+                Image(systemName: "pawprint.fill")
+                    .foregroundStyle(Color("BrandLightGreen").opacity(0.5))
+            }
+    }
+}
+
+private struct SpeciesImageView: View {
+    let speciesID: Int
+    let catalogItem: CatalogSpecies?
+
+    var body: some View {
+        if let localURL = CatalogStore.shared.localImageURL(for: speciesID),
+           let uiImage = UIImage(contentsOfFile: localURL.path) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFill()
+        } else {
+            AsyncImage(url: catalogItem?.imageURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                case .failure:
+                    placeholder
+                default:
+                    ProgressView()
+                        .frame(height: 70)
+                }
+            }
+        }
+    }
+
+    private var placeholder: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(Color("BrandGreen").opacity(0.3))
             .overlay {
                 Image(systemName: "pawprint.fill")
                     .foregroundStyle(Color("BrandLightGreen").opacity(0.5))
