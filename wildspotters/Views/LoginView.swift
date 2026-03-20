@@ -48,7 +48,7 @@ struct LoginView: View {
                     // Form fields
                     VStack(spacing: 12) {
                         TextField(String(localized: "login.username"), text: $username)
-                            .textContentType(.emailAddress)
+                            .textContentType(.username)
                             .keyboardType(.emailAddress)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
