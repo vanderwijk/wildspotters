@@ -3,6 +3,7 @@ import SwiftUI
 struct LoginView: View {
 
     @ObservedObject var authManager: AuthManager
+    var onShowRegister: (() -> Void)? = nil
 
     @State private var username = ""
     @State private var password = ""
@@ -80,6 +81,15 @@ struct LoginView: View {
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
                     .disabled(!canSubmit)
+
+                    // Register link
+                    if let onShowRegister {
+                        Button(action: onShowRegister) {
+                            Text("login.noAccount")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
                 .padding(32)
                 .frame(minHeight: geometry.size.height)

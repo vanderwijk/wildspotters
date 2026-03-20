@@ -4,6 +4,8 @@ enum APIError: LocalizedError {
     case invalidResponse
     case unauthorized
     case invalidCredentials
+    case notActivated
+    case emailAlreadyExists
     case rateLimited
     case conflict(String?)
     case serverError(statusCode: Int, message: String?)
@@ -18,6 +20,10 @@ enum APIError: LocalizedError {
             return String(localized: "error.unauthorized")
         case .invalidCredentials:
             return String(localized: "error.invalidCredentials")
+        case .notActivated:
+            return String(localized: "error.notActivated")
+        case .emailAlreadyExists:
+            return String(localized: "error.emailAlreadyExists")
         case .rateLimited:
             return String(localized: "error.rateLimited")
         case .conflict(let message):

@@ -32,6 +32,25 @@ final class APIClient: Sendable {
         return try await perform(request, isLogin: true)
     }
 
+    func register(firstName: String, lastName: String, email: String, password: String) async throws {
+        struct RegistrationRequest: Encodable {
+            let firstName: String
+            let lastName: String
+            let email: String
+            let password: String
+            enum CodingKeys: String, CodingKey {
+                case firstName = "first_name"
+                case lastName  = "last_name"
+                case email, password
+            }
+        }
+        struct RegistrationResponse: Decodable { let success: Bool }
+        let _: RegistrationResponse = try await post(
+            "register",
+            body: RegistrationRequest(firstName: firstName, lastName: lastName, email: email, password: password)
+        )
+    }
+
     // MARK: - Spots
 
     func fetchNextSpot() async throws -> Spot? {
@@ -104,8 +123,13 @@ final class APIClient: Sendable {
             }
             AuthManager.shared.logout()
             throw APIError.unauthorized
+        case 403:
+            throw APIError.notActivated
         case 409:
             let message = try? decoder.decode(ServerError.self, from: data).message
+            if message?.contains("email") == true || message?.contains("exists") == true {
+                throw APIError.emailAlreadyExists
+            }
             throw APIError.conflict(message)
         case 429:
             throw APIError.rateLimited
