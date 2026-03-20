@@ -10,6 +10,7 @@ struct LoginView: View {
     @State private var password = ""
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var showForgotPassword = false
 
     private var canSubmit: Bool {
         !username.trimmingCharacters(in: .whitespaces).isEmpty
@@ -92,6 +93,13 @@ struct LoginView: View {
                     .controlSize(.large)
                     .disabled(!canSubmit)
 
+                    // Forgot password link
+                    Button { showForgotPassword = true } label: {
+                        Text("login.forgotPassword")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+
                     // Register link
                     if let onShowRegister {
                         Button(action: onShowRegister) {
@@ -108,6 +116,9 @@ struct LoginView: View {
         }
         .background(Color("BrandBeige"))
         .animation(.default, value: errorMessage != nil)
+        .sheet(isPresented: $showForgotPassword) {
+            ForgotPasswordView()
+        }
     }
 
     private func login() {

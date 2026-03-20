@@ -32,6 +32,12 @@ final class APIClient: Sendable {
         return try await perform(request, isLogin: true)
     }
 
+    func forgotPassword(email: String) async throws {
+        struct ForgotPasswordRequest: Encodable { let email: String }
+        struct ForgotPasswordResponse: Decodable { let success: Bool }
+        let _: ForgotPasswordResponse = try await post("forgot-password", body: ForgotPasswordRequest(email: email))
+    }
+
     func register(firstName: String, lastName: String, email: String, password: String) async throws {
         struct RegistrationRequest: Encodable {
             let firstName: String

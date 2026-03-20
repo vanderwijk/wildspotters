@@ -341,6 +341,74 @@
         }
       }
     },
+    "forgotPassword.backToLogin" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to Login"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terug naar inloggen"
+          }
+        }
+      }
+    },
+    "forgotPassword.button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Reset Link"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verstuur resetlink"
+          }
+        }
+      }
+    },
+    "forgotPassword.success" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If an account exists for this email address, you will receive a reset link shortly."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als er een account bestaat voor dit e-mailadres, ontvang je binnenkort een resetlink."
+          }
+        }
+      }
+    },
+    "login.forgotPassword" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forgot password?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wachtwoord vergeten?"
+          }
+        }
+      }
+    },
     "error.emailAlreadyExists" : {
       "extractionState" : "manual",
       "localizations" : {
