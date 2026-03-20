@@ -127,7 +127,7 @@ final class APIClient: Sendable {
             if isLogin {
                 throw APIError.invalidCredentials
             }
-            AuthManager.shared.logout()
+            await MainActor.run { AuthManager.shared.logout() }
             throw APIError.unauthorized
         case 403:
             throw APIError.notActivated
@@ -145,7 +145,7 @@ final class APIClient: Sendable {
         }
 
         do {
-            return try decoder.decode(T.self, from: data)
+            return try decoder.decode(T.self, from: data.isEmpty ? Data("{}".utf8) : data)
         } catch {
             throw APIError.decodingFailed(error)
         }
