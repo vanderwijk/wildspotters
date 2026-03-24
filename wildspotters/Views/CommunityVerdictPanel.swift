@@ -2,10 +2,21 @@ import SwiftUI
 
 struct CommunityVerdictPanel: View {
 
-    let panel: IdentificationPanel
+    let panelState: IdentificationViewModel.PanelState
+    let catalogStore: CatalogStore
     let countdownRemaining: Int
     let countdownDuration: Int
     let onAdvance: () -> Void
+
+    private var panel: IdentificationPanel? {
+        if case .showing(let p) = panelState { return p }
+        return nil
+    }
+
+    private var selectedSpecies: Species? {
+        if case .submitting(let s) = panelState { return s }
+        return nil
+    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -14,27 +25,34 @@ struct CommunityVerdictPanel: View {
                 .font(.headline)
                 .foregroundStyle(.white)
 
-            // Selected species with image
+            // Selected species row — available immediately
             selectedSpeciesRow
 
-            // Community stats bars
-            VStack(spacing: 8) {
-                ForEach(panel.communityTopSpecies) { stat in
-                    speciesStatRow(stat)
+            if let panel {
+                // Community stats bars
+                VStack(spacing: 8) {
+                    ForEach(panel.communityTopSpecies) { stat in
+                        speciesStatRow(stat)
+                    }
                 }
+
+                // Total identifications
+                Text("identification.totalIdentifications \(panel.communityTotalIdentifications)")
+                    .font(.caption)
+                    .foregroundStyle(Color("BrandLightGreen").opacity(0.7))
+
+                // Next video button with countdown
+                CountdownButton(
+                    remaining: countdownRemaining,
+                    duration: countdownDuration,
+                    action: onAdvance
+                )
+            } else {
+                // Loading state
+                ProgressView()
+                    .tint(Color("BrandLightGreen"))
+                    .padding(.vertical, 8)
             }
-
-            // Total identifications
-            Text(String(localized: "identification.totalIdentifications \(panel.communityTotalIdentifications)"))
-                .font(.caption)
-                .foregroundStyle(Color("BrandLightGreen").opacity(0.7))
-
-            // Next video button with countdown
-            CountdownButton(
-                remaining: countdownRemaining,
-                duration: countdownDuration,
-                action: onAdvance
-            )
         }
         .padding(20)
         .background(
@@ -48,7 +66,7 @@ struct CommunityVerdictPanel: View {
 
     private var selectedSpeciesRow: some View {
         HStack(spacing: 12) {
-            speciesImage(url: panel.selectedSpecies.imageURL)
+            selectedSpeciesImage
                 .frame(width: 48, height: 48)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
 
@@ -56,7 +74,7 @@ struct CommunityVerdictPanel: View {
                 Text(String(localized: "identification.yourChoice"))
                     .font(.caption)
                     .foregroundStyle(Color("BrandLightGreen").opacity(0.7))
-                Text(panel.selectedSpecies.displayName)
+                Text(selectedSpeciesName)
                     .font(.subheadline.bold())
                     .foregroundStyle(.white)
             }
@@ -68,6 +86,24 @@ struct CommunityVerdictPanel: View {
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color("BrandGreen").opacity(0.2))
         )
+    }
+
+    private var selectedSpeciesName: String {
+        if let panel { return panel.selectedSpecies.displayName }
+        if let species = selectedSpecies { return species.displayName }
+        return ""
+    }
+
+    @ViewBuilder
+    private var selectedSpeciesImage: some View {
+        if let panel {
+            speciesImage(url: panel.selectedSpecies.imageURL)
+        } else if let species = selectedSpecies,
+                  let catalogItem = catalogStore.species[species.id] {
+            speciesImage(url: catalogItem.imageURL)
+        } else {
+            speciesPlaceholder
+        }
     }
 
     // MARK: - Stat Row
@@ -96,10 +132,10 @@ struct CommunityVerdictPanel: View {
             }
             .frame(height: 8)
 
-            Text("\(stat.percentage)%")
+            Text(stat.formattedPercentage)
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(Color("BrandLightGreen"))
-                .frame(width: 40, alignment: .trailing)
+                .frame(width: 48, alignment: .trailing)
         }
     }
 
@@ -146,10 +182,10 @@ struct CountdownButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 10) {
+            HStack {
                 Text("identification.nextVideo")
-                    .font(.headline)
-                    .foregroundStyle(Color("BrandDarkGreen"))
+
+                Spacer()
 
                 ZStack {
                     Circle()
@@ -168,10 +204,11 @@ struct CountdownButton: View {
                 .frame(width: 28, height: 28)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(Color("BrandLightGreen"))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
+        .buttonStyle(.borderedProminent)
+        .controlSize(.large)
+        .tint(Color("BrandLightGreen"))
+        .foregroundStyle(Color("BrandDarkGreen"))
     }
 
     private var progress: CGFloat {

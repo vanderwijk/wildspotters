@@ -66,12 +66,13 @@ final class APIClient: Sendable {
 
     // MARK: - Identifications
 
-    func submitIdentification(_ identification: Identification) async throws {
-        let _: SuccessResponse = try await post(
+    func submitIdentification(_ identification: Identification) async throws -> IdentificationPanel? {
+        let response: IdentificationResponse = try await post(
             "identifications",
             body: identification,
             authenticated: true
         )
+        return response.panel
     }
 
     // MARK: - Private
@@ -160,8 +161,5 @@ private struct ServerError: Decodable {
     let message: String
 }
 
-private struct SuccessResponse: Decodable {
-    let success: Bool
-    let action: String
-}
+
 

@@ -8,12 +8,21 @@ struct IdentificationView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color("BrandDarkGreen").ignoresSafeArea()
+                ZStack {
+                    Color("BrandBeige")
+                    RadialGradient(
+                        colors: [.clear, .black.opacity(0.12)],
+                        center: .center,
+                        startRadius: 50,
+                        endRadius: UIScreen.main.bounds.height * 0.7
+                    )
+                }
+                .ignoresSafeArea()
 
                 if viewModel.isLoading && viewModel.currentSpot == nil {
                     ProgressView(String(localized: "identification.loading"))
-                        .tint(.white)
-                        .foregroundStyle(.white)
+                        .tint(Color("BrandDarkGreen"))
+                        .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
                 } else if let spot = viewModel.currentSpot {
                     spotContent(spot)
                         .transition(.opacity)
@@ -30,17 +39,27 @@ struct IdentificationView: View {
                     errorContent(error)
                 }
             }
-            .navigationTitle(String(localized: "app.name"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbarBackground(Color("BrandDarkGreen"), for: .navigationBar)
+            .toolbarBackground(Color("BrandBeige").opacity(0.9), for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(String(localized: "common.logout")) {
+                ToolbarItem(placement: .principal) {
+                    Image("Logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 44)
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
                         authManager.logout()
+                    } label: {
+                        Image("LogoutIcon")
+                            .renderingMode(.original)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
                     }
-                    .tint(Color("BrandLightGreen"))
+                    .buttonStyle(.borderless)
                 }
             }
             .task {
@@ -53,53 +72,63 @@ struct IdentificationView: View {
     // MARK: - Subviews
 
     private func spotContent(_ spot: Spot) -> some View {
-        VStack(spacing: 0) {
-            VideoPlayerView(url: spot.videoURL)
-                .aspectRatio(16/9, contentMode: .fit)
-                .accessibilityLabel(String(localized: "accessibility.videoPlayer"))
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                VideoPlayerView(url: spot.videoURL)
+                    .aspectRatio(16/9, contentMode: .fit)
+                    .accessibilityLabel(String(localized: "accessibility.videoPlayer"))
 
-            ScrollView {
-                VStack(spacing: 12) {
-                    Text("identification.question")
-                        .font(.headline)
-                        .foregroundStyle(.white)
+                ScrollView {
+                    VStack(spacing: 12) {
+                        Text("identification.question")
+                            .font(.headline)
+                            .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
 
-                    SpeciesSelectionView(
-                        species: spot.speciesOptions,
-                        catalog: viewModel.catalogStore.species,
-                        isDisabled: viewModel.isSubmitting
-                    ) { selected in
-                        Task {
-                            await viewModel.submitIdentification(speciesID: selected.id)
+                        SpeciesSelectionView(
+                            species: spot.speciesOptions,
+                            catalog: viewModel.catalogStore.species,
+                            isDisabled: viewModel.isPanelVisible
+                        ) { selected in
+                            Task {
+                                await viewModel.submitIdentification(species: selected)
+                            }
                         }
                     }
-
-                    if viewModel.isSubmitting {
-                        ProgressView()
-                            .tint(.white)
-                            .transition(.opacity)
-                            .accessibilityLabel(String(localized: "identification.submitting"))
-                    }
+                    .padding(.vertical, 16)
                 }
-                .padding(.vertical, 16)
+            }
+
+            // Community verdict panel overlay
+            if viewModel.isPanelVisible {
+                CommunityVerdictPanel(
+                    panelState: viewModel.panelState,
+                    catalogStore: viewModel.catalogStore,
+                    countdownRemaining: viewModel.countdownRemaining,
+                    countdownDuration: 10,
+                    onAdvance: {
+                        Task { await viewModel.advanceToNextSpot() }
+                    }
+                )
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .padding(.bottom, 8)
             }
         }
-
+        .animation(.easeInOut(duration: 0.3), value: viewModel.isPanelVisible)
     }
 
     private var emptyContent: some View {
         VStack(spacing: 16) {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: 48))
-                .foregroundStyle(Color("BrandLightGreen"))
+                .foregroundStyle(Color("BrandGreen"))
                 .accessibilityHidden(true)
 
             Text("identification.empty.title")
                 .font(.title2.bold())
-                .foregroundStyle(.white)
+                .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
 
             Text("identification.empty.message")
-                .foregroundStyle(Color("BrandLightGreen").opacity(0.8))
+                .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196).opacity(0.7))
 
             Button(String(localized: "identification.empty.button")) {
                 Task { await viewModel.loadNextSpot() }
@@ -113,11 +142,11 @@ struct IdentificationView: View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.largeTitle)
-                .foregroundStyle(Color("BrandLightGreen"))
+                .foregroundStyle(Color("BrandGreen"))
                 .accessibilityHidden(true)
 
             Text(message)
-                .foregroundStyle(Color("BrandLightGreen").opacity(0.8))
+                .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196).opacity(0.8))
                 .multilineTextAlignment(.center)
 
             Button(String(localized: "common.retry")) {

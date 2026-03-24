@@ -34,7 +34,7 @@ struct LoginView: View {
 
                         Text("login.subtitle")
                             .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
                     }
 
                     // Activation success message
@@ -97,7 +97,7 @@ struct LoginView: View {
                     Button { showForgotPassword = true } label: {
                         Text("login.forgotPassword")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
                     }
 
                     // Register link
@@ -105,7 +105,7 @@ struct LoginView: View {
                         Button(action: onShowRegister) {
                             Text("login.noAccount")
                                 .font(.footnote)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
                         }
                     }
                 }
@@ -114,7 +114,18 @@ struct LoginView: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .background(Color("BrandBeige"))
+        .background(
+            ZStack {
+                Color("BrandBeige")
+                RadialGradient(
+                    colors: [.clear, .black.opacity(0.12)],
+                    center: .center,
+                    startRadius: 50,
+                    endRadius: UIScreen.main.bounds.height * 0.7
+                )
+            }
+            .ignoresSafeArea()
+        )
         .animation(.default, value: errorMessage != nil)
         .sheet(isPresented: $showForgotPassword) {
             ForgotPasswordView()

@@ -8,6 +8,8 @@
 	<dict>
 		<key>UIImageName</key>
 		<string>LaunchImage</string>
+		<key>UIImageRespectsSafeAreaInsets</key>
+		<false/>
 	</dict>
 	<key>CFBundleURLTypes</key>
 	<array>

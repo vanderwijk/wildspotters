@@ -46,7 +46,7 @@ struct CommunitySpeciesStat: Decodable, Identifiable {
     let name: String
     let scientificName: String?
     let englishName: String?
-    let percentage: Int
+    let percentage: Double
     let imageURL: URL?
 
     enum CodingKeys: String, CodingKey {
@@ -62,5 +62,12 @@ struct CommunitySpeciesStat: Decodable, Identifiable {
             return name
         }
         return englishName ?? name
+    }
+
+    var formattedPercentage: String {
+        if percentage == percentage.rounded() {
+            return "\(Int(percentage))%"
+        }
+        return String(format: "%.1f%%", percentage)
     }
 }

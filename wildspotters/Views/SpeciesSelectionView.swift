@@ -8,7 +8,7 @@ struct SpeciesSelectionView: View {
     let onSelect: (Species) -> Void
 
     private let columns = [
-        GridItem(.adaptive(minimum: 90), spacing: 8)
+        GridItem(.adaptive(minimum: 100), spacing: 12)
     ]
 
     var body: some View {
@@ -19,23 +19,29 @@ struct SpeciesSelectionView: View {
                     UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     onSelect(item)
                 } label: {
-                    VStack(spacing: 4) {
+                    VStack(spacing: 0) {
                         if catalogItem?.imageURL != nil {
                             SpeciesImageView(speciesID: item.id, catalogItem: catalogItem)
-                                .frame(width: 80, height: 70)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .frame(maxWidth: .infinity)
+                                .aspectRatio(1, contentMode: .fill)
+                                .clipped()
                         } else {
                             speciesPlaceholder
                         }
 
                         Text(item.displayName)
-                            .font(.caption2)
-                            .foregroundStyle(.white)
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
                             .lineLimit(2)
                             .multilineTextAlignment(.center)
-                            .frame(height: 28)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 32)
+                            .padding(.horizontal, 4)
                     }
-                    .frame(maxWidth: .infinity)
+                    .padding([.top, .horizontal], 6)
+                    .background(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
                 }
                 .buttonStyle(.plain)
                 .disabled(isDisabled)
@@ -48,12 +54,11 @@ struct SpeciesSelectionView: View {
     }
 
     private var speciesPlaceholder: some View {
-        RoundedRectangle(cornerRadius: 8)
-            .fill(Color("BrandGreen").opacity(0.3))
-            .frame(width: 80, height: 70)
+        Color("BrandGreen").opacity(0.15)
+            .aspectRatio(1, contentMode: .fill)
             .overlay {
                 Image(systemName: "pawprint.fill")
-                    .foregroundStyle(Color("BrandLightGreen").opacity(0.5))
+                    .foregroundStyle(Color("BrandGreen").opacity(0.3))
             }
     }
 }
@@ -86,11 +91,10 @@ private struct SpeciesImageView: View {
     }
 
     private var placeholder: some View {
-        RoundedRectangle(cornerRadius: 8)
-            .fill(Color("BrandGreen").opacity(0.3))
+        Color("BrandGreen").opacity(0.15)
             .overlay {
                 Image(systemName: "pawprint.fill")
-                    .foregroundStyle(Color("BrandLightGreen").opacity(0.5))
+                    .foregroundStyle(Color("BrandGreen").opacity(0.3))
             }
     }
 }
