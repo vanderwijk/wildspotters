@@ -436,13 +436,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "What species is this?"
+            "value" : "Can you identify this animal?"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Welke diersoort is dit?"
+            "value" : "Weet jij welk dier dit is?"
           }
         }
       }

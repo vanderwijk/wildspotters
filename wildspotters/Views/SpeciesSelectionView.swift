@@ -31,7 +31,7 @@ struct SpeciesSelectionView: View {
 
                         Text(item.displayName)
                             .font(.caption2.weight(.semibold))
-                            .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
+                            .foregroundStyle(Color("BrandDarkGray"))
                             .lineLimit(2)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity)
