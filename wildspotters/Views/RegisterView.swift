@@ -26,7 +26,7 @@ struct RegisterView: View {
             ScrollView {
                 VStack(spacing: 32) {
                     Spacer()
-                        .frame(height: geometry.size.height * 0.12)
+                        .frame(height: geometry.size.height * 0.04)
 
                     // Header
                     VStack(spacing: 12) {
@@ -39,6 +39,11 @@ struct RegisterView: View {
                             .font(.subheadline)
                             .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
                     }
+
+                    Text("register.description")
+                        .font(.subheadline)
+                        .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196).opacity(0.8))
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
                     if registrationSuccessful {
                         // Success state

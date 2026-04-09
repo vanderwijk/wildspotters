@@ -498,6 +498,23 @@
         }
       }
     },
+    "login.description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome back! Log in with your account to keep spotting."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welkom terug! Log in met je account om verder te spotten."
+          }
+        }
+      }
+    },
     "login.button" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -617,19 +634,36 @@
         }
       }
     },
+    "register.description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spot them all! Create a free account to get started. After signing up, we'll send you an email to activate your account."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spot ze allemaal! Maak een gratis account aan om mee te doen. Na registratie ontvang je een e-mail om je account te activeren."
+          }
+        }
+      }
+    },
     "register.button" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create Account"
+            "value" : "Start Spotting"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Account aanmaken"
+            "value" : "Start met spotten"
           }
         }
       }
