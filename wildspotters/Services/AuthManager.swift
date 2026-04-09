@@ -17,6 +17,11 @@ final class AuthManager: ObservableObject {
         isAuthenticated = true
     }
 
+    func loginWithToken(_ token: String) throws {
+        try KeychainService.saveToken(token)
+        isAuthenticated = true
+    }
+
     func logout() {
         KeychainService.deleteToken()
         isAuthenticated = false

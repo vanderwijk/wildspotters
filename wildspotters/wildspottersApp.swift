@@ -26,8 +26,14 @@ struct wildspottersApp: App {
             .animation(.default, value: showLogin)
             .onOpenURL { url in
                 guard url.scheme == "wildspotters", url.host == "activated" else { return }
-                activationSuccessMessage = String(localized: "activation.success")
-                showLogin = true
+                let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+                if let token = components?.queryItems?.first(where: { $0.name == "token" })?.value,
+                   (try? authManager.loginWithToken(token)) != nil {
+                    // token stored — isAuthenticated will flip to true automatically
+                } else {
+                    activationSuccessMessage = String(localized: "activation.success")
+                    showLogin = true
+                }
             }
         }
     }
