@@ -24,7 +24,8 @@ final class IdentificationViewModel: ObservableObject {
         }
     }
 
-    @Published private(set) var currentSpot: Spot?
+    @Published var spots: [Spot] = []
+    @Published var currentIndex: Int = 0
     @Published private(set) var isLoading = false
     @Published private(set) var isEmpty = false
     @Published private(set) var errorMessage: String?
@@ -34,7 +35,14 @@ final class IdentificationViewModel: ObservableObject {
     let catalogStore = CatalogStore.shared
     private let apiClient = APIClient.shared
     private var countdownTask: Task<Void, Never>?
+    private var preloadTask: Task<Void, Never>?
     private static let countdownDuration = 10
+    private static let skipTermID = 74
+
+    var currentSpot: Spot? {
+        guard currentIndex >= 0, currentIndex < spots.count else { return nil }
+        return spots[currentIndex]
+    }
 
     var isSubmitting: Bool {
         if case .submitting = panelState { return true }
@@ -50,25 +58,90 @@ final class IdentificationViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Loading
+
     func loadInitial() async {
         async let catalogRefresh: () = catalogStore.refresh()
-        async let spotLoad: () = loadNextSpot()
-        _ = await (catalogRefresh, spotLoad)
+        async let spotsLoad: () = loadFirstTwoSpots()
+        _ = await (catalogRefresh, spotsLoad)
     }
 
+    /// Loads two spots while the spinner is showing so the TabView
+    /// has a next page ready without any mid-session flash.
+    private func loadFirstTwoSpots() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            guard let first = try await apiClient.fetchNextSpot() else {
+                isEmpty = true
+                return
+            }
+
+            let second = try? await apiClient.fetchNextSpot(excluding: [first.id])
+
+            spots = [first]
+            if let second {
+                spots.append(second)
+                _ = PlayerCache.shared.player(for: second.videoURL)
+            }
+
+            preloadNextSpot()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    /// Called from empty/error states to retry loading.
     func loadNextSpot() async {
         errorMessage = nil
         isEmpty = false
         isLoading = true
         defer { isLoading = false }
 
+        let excludeIDs = spots.suffix(2).map(\.id)
         do {
-            currentSpot = try await apiClient.fetchNextSpot()
-            isEmpty = currentSpot == nil
+            if let spot = try await apiClient.fetchNextSpot(excluding: excludeIDs) {
+                spots.append(spot)
+                currentIndex = spots.count - 1
+                preloadNextSpot()
+            } else {
+                isEmpty = true
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
     }
+
+    private func preloadNextSpot() {
+        preloadTask?.cancel()
+        preloadTask = Task {
+            let excludeIDs = spots.suffix(3).map(\.id)
+            if let spot = try? await apiClient.fetchNextSpot(excluding: excludeIDs) {
+                guard !Task.isCancelled else { return }
+                if !spots.contains(where: { $0.id == spot.id }) {
+                    _ = PlayerCache.shared.player(for: spot.videoURL)
+                    spots.append(spot)
+                }
+            }
+        }
+    }
+
+    // MARK: - Skip (swipe forward)
+
+    func submitSkip(at index: Int) {
+        guard index >= 0, index < spots.count else { return }
+        let spot = spots[index]
+        Task {
+            let skip = Identification(spotID: spot.id, speciesID: Self.skipTermID)
+            _ = try? await apiClient.submitIdentification(skip)
+        }
+        if currentIndex >= spots.count - 2 {
+            preloadNextSpot()
+        }
+    }
+
+    // MARK: - Identification (species tap)
 
     func submitIdentification(species: Species) async {
         guard let spot = currentSpot else { return }
@@ -84,7 +157,6 @@ final class IdentificationViewModel: ObservableObject {
                 panelState = .showing(panel)
                 startCountdown()
             } else {
-                // No panel data — advance immediately
                 await advanceToNextSpot()
             }
         } catch {
@@ -95,11 +167,30 @@ final class IdentificationViewModel: ObservableObject {
 
     func advanceToNextSpot() async {
         cancelCountdown()
-        panelState = .loadingNext
-        currentSpot = nil
-        await loadNextSpot()
         panelState = .hidden
+
+        if currentIndex + 1 < spots.count {
+            currentIndex += 1
+            preloadNextSpot()
+        } else {
+            isLoading = true
+            let excludeIDs = spots.suffix(2).map(\.id)
+            do {
+                if let spot = try await apiClient.fetchNextSpot(excluding: excludeIDs) {
+                    spots.append(spot)
+                    currentIndex += 1
+                    preloadNextSpot()
+                } else {
+                    isEmpty = true
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isLoading = false
+        }
     }
+
+    // MARK: - Countdown
 
     private func startCountdown() {
         cancelCountdown()
@@ -112,8 +203,6 @@ final class IdentificationViewModel: ObservableObject {
                 countdownRemaining = tick
             }
             guard !Task.isCancelled else { return }
-            // Clear the task reference before advancing so cancelCountdown()
-            // doesn't cancel the task we're currently running in.
             countdownTask = nil
             await advanceToNextSpot()
         }

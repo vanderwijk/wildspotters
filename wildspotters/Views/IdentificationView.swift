@@ -24,8 +24,7 @@ struct IdentificationView: View {
                         .tint(Color("BrandDarkGreen"))
                         .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
                 } else if let spot = viewModel.currentSpot {
-                    spotContent(spot)
-                        .transition(.opacity)
+                    spotPager(spot)
                 } else if viewModel.isEmpty {
                     ScrollView {
                         emptyContent
@@ -65,38 +64,19 @@ struct IdentificationView: View {
             .task {
                 await viewModel.loadInitial()
             }
-            .animation(.easeInOut(duration: 0.3), value: viewModel.currentSpot?.id)
         }
     }
 
-    // MARK: - Subviews
+    // MARK: - Pager
 
-    private func spotContent(_ spot: Spot) -> some View {
+    private func spotPager(_ spot: Spot) -> some View {
         ZStack(alignment: .bottom) {
-            VStack(spacing: 0) {
-                VideoPlayerView(url: spot.videoURL)
-                    .aspectRatio(16/9, contentMode: .fit)
-                    .accessibilityLabel(String(localized: "accessibility.videoPlayer"))
-
-                ScrollView {
-                    VStack(spacing: 12) {
-                        Text("identification.question")
-                            .font(.headline)
-                            .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
-
-                        SpeciesSelectionView(
-                            species: spot.speciesOptions,
-                            catalog: viewModel.catalogStore.species,
-                            isDisabled: viewModel.isPanelVisible
-                        ) { selected in
-                            Task {
-                                await viewModel.submitIdentification(species: selected)
-                            }
-                        }
-                    }
-                    .padding(.vertical, 16)
-                }
-            }
+            spotContent(spot)
+                .id(spot.id)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing),
+                    removal: .move(edge: .leading)
+                ))
 
             // Community verdict panel overlay
             if viewModel.isPanelVisible {
@@ -114,6 +94,54 @@ struct IdentificationView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: viewModel.isPanelVisible)
+    }
+
+    // MARK: - Subviews
+
+    private func spotContent(_ spot: Spot) -> some View {
+        VStack(spacing: 0) {
+            VideoPlayerView(url: spot.videoURL, isActive: !viewModel.isPanelVisible || true) {
+                skipToNext()
+            }
+            .aspectRatio(16/9, contentMode: .fit)
+            .accessibilityLabel(String(localized: "accessibility.videoPlayer"))
+
+            ScrollView {
+                VStack(spacing: 12) {
+                    Text("identification.question")
+                        .font(.headline)
+                        .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
+
+                    SpeciesSelectionView(
+                        species: spot.speciesOptions.filter { $0.id != 74 },
+                        catalog: viewModel.catalogStore.species,
+                        isDisabled: viewModel.isPanelVisible
+                    ) { selected in
+                        Task {
+                            await viewModel.submitIdentification(species: selected)
+                        }
+                    }
+                }
+                .padding(.vertical, 16)
+            }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 50)
+                    .onEnded { value in
+                        if value.translation.width < -50 &&
+                           abs(value.translation.height) < abs(value.translation.width) {
+                            skipToNext()
+                        }
+                    }
+            )
+        }
+        .background(Color("BrandBeige"))
+    }
+
+    private func skipToNext() {
+        guard !viewModel.isPanelVisible else { return }
+        withAnimation(.easeInOut(duration: 0.3)) {
+            viewModel.skipCurrentSpot()
+        }
     }
 
     private var emptyContent: some View {
