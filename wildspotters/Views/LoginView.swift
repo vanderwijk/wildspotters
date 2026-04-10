@@ -34,12 +34,12 @@ struct LoginView: View {
 
                         Text("login.subtitle")
                             .font(.subheadline)
-                            .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
+                            .foregroundStyle(Color("BrandDarkGray"))
                     }
 
                     Text("login.description")
                         .font(.subheadline)
-                        .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196).opacity(0.8))
+                        .foregroundStyle(Color("BrandDarkGray").opacity(0.8))
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     // Activation success message
@@ -59,7 +59,7 @@ struct LoginView: View {
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             .padding()
-                            .background(.white)
+                            .background(Color(.systemBackground))
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                             .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("BrandLightGreen"), lineWidth: 1))
                             .onChange(of: username) { errorMessage = nil }
@@ -67,7 +67,7 @@ struct LoginView: View {
                         SecureField(String(localized: "login.password"), text: $password)
                             .textContentType(.password)
                             .padding()
-                            .background(.white)
+                            .background(Color(.systemBackground))
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                             .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("BrandLightGreen"), lineWidth: 1))
                             .onChange(of: password) { errorMessage = nil }
@@ -102,7 +102,7 @@ struct LoginView: View {
                     Button { showForgotPassword = true } label: {
                         Text("login.forgotPassword")
                             .font(.footnote)
-                            .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
+                            .foregroundStyle(Color("BrandDarkGray"))
                     }
 
                     // Register link
@@ -110,7 +110,7 @@ struct LoginView: View {
                         Button(action: onShowRegister) {
                             Text("login.noAccount")
                                 .font(.footnote)
-                                .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
+                                .foregroundStyle(Color("BrandDarkGray"))
                         }
                     }
                 }
@@ -156,6 +156,8 @@ struct LoginView: View {
     }
 }
 
-#Preview {
-    LoginView(authManager: AuthManager.shared)
+struct LoginView_Previews: PreviewProvider {
+    static var previews: some View {
+        LoginView(authManager: AuthManager.shared)
+    }
 }

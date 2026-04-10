@@ -1,5 +1,20 @@
 import Foundation
 
+protocol LocalizedSpeciesNameProviding {
+    var name: String { get }
+    var englishName: String? { get }
+}
+
+extension LocalizedSpeciesNameProviding {
+    var localizedDisplayName: String {
+        let preferredLanguage = Bundle.main.preferredLocalizations.first ?? "en"
+        if preferredLanguage.hasPrefix("nl") {
+            return name
+        }
+        return englishName ?? name
+    }
+}
+
 struct SpotResponse: Decodable {
     let spot: Spot?
 
@@ -53,7 +68,7 @@ struct SpotLocation: Decodable {
     let slug: String
 }
 
-struct Species: Decodable, Identifiable, Hashable {
+struct Species: Decodable, Identifiable, Hashable, LocalizedSpeciesNameProviding {
     let id: Int
     let name: String
     let scientificName: String?
@@ -66,11 +81,5 @@ struct Species: Decodable, Identifiable, Hashable {
         case englishName = "english_name"
     }
 
-    var displayName: String {
-        let preferredLanguage = Bundle.main.preferredLocalizations.first ?? "en"
-        if preferredLanguage.hasPrefix("nl") {
-            return name
-        }
-        return englishName ?? name
-    }
+    var displayName: String { localizedDisplayName }
 }

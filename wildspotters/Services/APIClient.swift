@@ -7,12 +7,14 @@ final class APIClient: Sendable {
     private let baseURL = URL(string: "https://wildspotters.nl/wp-json/wildspotters/v1")!
     private let session: URLSession
     private let decoder: JSONDecoder
+    private let encoder: JSONEncoder
 
     private init() {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30
         session = URLSession(configuration: config)
         decoder = JSONDecoder()
+        encoder = JSONEncoder()
     }
 
     // MARK: - Auth
@@ -59,8 +61,13 @@ final class APIClient: Sendable {
 
     // MARK: - Spots
 
-    func fetchNextSpot() async throws -> Spot? {
-        let response: SpotResponse = try await get("spot-videos/next", authenticated: true)
+    func fetchNextSpot(excluding ids: [Int] = []) async throws -> Spot? {
+        var queryItems: [URLQueryItem] = []
+        if !ids.isEmpty {
+            let excludeParam = ids.map(String.init).joined(separator: ",")
+            queryItems.append(URLQueryItem(name: "exclude", value: excludeParam))
+        }
+        let response: SpotResponse = try await get("spot-videos/next", queryItems: queryItems, authenticated: true)
         return response.spot
     }
 
@@ -79,9 +86,21 @@ final class APIClient: Sendable {
 
     private func get<T: Decodable>(
         _ path: String,
+        queryItems: [URLQueryItem] = [],
         authenticated: Bool = false
     ) async throws -> T {
-        var request = URLRequest(url: baseURL.appendingPathComponent(path))
+        var url = baseURL.appendingPathComponent(path)
+        if !queryItems.isEmpty {
+            guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+                throw APIError.invalidResponse
+            }
+            components.queryItems = queryItems
+            guard let componentsURL = components.url else {
+                throw APIError.invalidResponse
+            }
+            url = componentsURL
+        }
+        var request = URLRequest(url: url)
         request.httpMethod = "GET"
         if authenticated { try applyAuth(&request) }
         return try await perform(request, authenticated: authenticated)
@@ -95,7 +114,7 @@ final class APIClient: Sendable {
         var request = URLRequest(url: baseURL.appendingPathComponent(path))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(body)
+        request.httpBody = try encoder.encode(body)
         if authenticated { try applyAuth(&request) }
         return try await perform(request, authenticated: authenticated)
     }
@@ -160,6 +179,5 @@ final class APIClient: Sendable {
 private struct ServerError: Decodable {
     let message: String
 }
-
 
 

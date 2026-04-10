@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-struct CatalogSpecies: Codable, Identifiable {
+struct CatalogSpecies: Codable, Identifiable, LocalizedSpeciesNameProviding {
     let id: Int
     let name: String
     let scientificName: String?
@@ -15,13 +15,7 @@ struct CatalogSpecies: Codable, Identifiable {
         case imageURL = "image_url"
     }
 
-    var displayName: String {
-        let preferredLanguage = Bundle.main.preferredLocalizations.first ?? "en"
-        if preferredLanguage.hasPrefix("nl") {
-            return name
-        }
-        return englishName ?? name
-    }
+    var displayName: String { localizedDisplayName }
 }
 
 private struct CatalogResponse: Decodable {
@@ -40,14 +34,24 @@ final class CatalogStore: ObservableObject {
     private let etagURL: URL
     private let imagesCacheDirectory: URL
     private let imageManifestURL: URL
+    private let imagePrefetchConcurrencyLimit = 4
+    private let session: URLSession
 
     private init() {
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 30
+        session = URLSession(configuration: configuration)
+
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         cacheURL = caches.appendingPathComponent("species_catalog.json")
         etagURL = caches.appendingPathComponent("species_catalog_etag.txt")
         imagesCacheDirectory = caches.appendingPathComponent("species_images", isDirectory: true)
         imageManifestURL = caches.appendingPathComponent("species_images_manifest.json")
-        try? FileManager.default.createDirectory(at: imagesCacheDirectory, withIntermediateDirectories: true)
+        do {
+            try FileManager.default.createDirectory(at: imagesCacheDirectory, withIntermediateDirectories: true)
+        } catch {
+            assertionFailure("Failed to create species image cache directory: \(error.localizedDescription)")
+        }
         loadFromDisk()
     }
 
@@ -67,7 +71,7 @@ final class CatalogStore: ObservableObject {
         }
 
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await session.data(for: request)
             guard let http = response as? HTTPURLResponse else { return }
 
             if http.statusCode == 304 { return }
@@ -93,28 +97,41 @@ final class CatalogStore: ObservableObject {
 
     private func prefetchImages(for speciesList: [CatalogSpecies]) async {
         var manifest = loadImageManifest()
+        let pendingDownloads = speciesList.compactMap { item -> PendingImageDownload? in
+            guard let remoteURL = item.imageURL else { return nil }
+
+            let remoteURLString = remoteURL.absoluteString
+            let destination = imagesCacheDirectory.appendingPathComponent("\(item.id).jpg")
+            let cachedURLString = manifest[String(item.id)]
+            let fileExists = FileManager.default.fileExists(atPath: destination.path)
+
+            guard !fileExists || cachedURLString != remoteURLString else { return nil }
+
+            return PendingImageDownload(
+                speciesID: item.id,
+                remoteURL: remoteURL,
+                remoteURLString: remoteURLString,
+                destination: destination
+            )
+        }
+
+        guard !pendingDownloads.isEmpty else { return }
 
         await withTaskGroup(of: (Int, String)?.self) { group in
-            for item in speciesList {
-                guard let remoteURL = item.imageURL else { continue }
-                let remoteURLString = remoteURL.absoluteString
-                let destination = imagesCacheDirectory.appendingPathComponent("\(item.id).jpg")
-                let cachedURLString = manifest[String(item.id)]
-                let fileExists = FileManager.default.fileExists(atPath: destination.path)
+            var downloadIterator = pendingDownloads.makeIterator()
 
-                // Skip if already cached with the same URL
-                guard !fileExists || cachedURLString != remoteURLString else { continue }
-
-                group.addTask {
-                    guard let data = try? await URLSession.shared.data(from: remoteURL).0 else { return nil }
-                    try? data.write(to: destination)
-                    return (item.id, remoteURLString)
-                }
+            for _ in 0..<min(imagePrefetchConcurrencyLimit, pendingDownloads.count) {
+                guard let download = downloadIterator.next() else { break }
+                group.addTask { await downloadImage(download, session: self.session) }
             }
 
             for await result in group {
                 guard let (speciesID, urlString) = result else { continue }
                 manifest[String(speciesID)] = urlString
+
+                if let nextDownload = downloadIterator.next() {
+                    group.addTask { await downloadImage(nextDownload, session: self.session) }
+                }
             }
         }
 
@@ -138,4 +155,20 @@ final class CatalogStore: ObservableObject {
               let catalog = try? JSONDecoder().decode(CatalogResponse.self, from: data) else { return }
         species = Dictionary(uniqueKeysWithValues: catalog.species.map { ($0.id, $0) })
     }
+}
+
+private struct PendingImageDownload {
+    let speciesID: Int
+    let remoteURL: URL
+    let remoteURLString: String
+    let destination: URL
+}
+
+private func downloadImage(_ pendingDownload: PendingImageDownload, session: URLSession) async -> (Int, String)? {
+    guard let data = try? await session.data(from: pendingDownload.remoteURL).0 else {
+        return nil
+    }
+
+    try? data.write(to: pendingDownload.destination)
+    return (pendingDownload.speciesID, pendingDownload.remoteURLString)
 }

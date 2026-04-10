@@ -18,7 +18,7 @@ struct IdentificationPanel: Decodable {
     }
 }
 
-struct PanelSpecies: Decodable {
+struct PanelSpecies: Decodable, LocalizedSpeciesNameProviding {
     let id: Int
     let name: String
     let scientificName: String?
@@ -32,16 +32,10 @@ struct PanelSpecies: Decodable {
         case imageURL = "image_url"
     }
 
-    var displayName: String {
-        let preferredLanguage = Bundle.main.preferredLocalizations.first ?? "en"
-        if preferredLanguage.hasPrefix("nl") {
-            return name
-        }
-        return englishName ?? name
-    }
+    var displayName: String { localizedDisplayName }
 }
 
-struct CommunitySpeciesStat: Decodable, Identifiable {
+struct CommunitySpeciesStat: Decodable, Identifiable, LocalizedSpeciesNameProviding {
     let id: Int
     let name: String
     let scientificName: String?
@@ -56,13 +50,7 @@ struct CommunitySpeciesStat: Decodable, Identifiable {
         case imageURL = "image_url"
     }
 
-    var displayName: String {
-        let preferredLanguage = Bundle.main.preferredLocalizations.first ?? "en"
-        if preferredLanguage.hasPrefix("nl") {
-            return name
-        }
-        return englishName ?? name
-    }
+    var displayName: String { localizedDisplayName }
 
     var formattedPercentage: String {
         if percentage == percentage.rounded() {

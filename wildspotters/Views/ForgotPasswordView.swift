@@ -29,7 +29,7 @@ struct ForgotPasswordView: View {
 
                         Text("login.subtitle")
                             .font(.subheadline)
-                            .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
+                            .foregroundStyle(Color("BrandDarkGray"))
                     }
 
                     if requestSuccessful {
@@ -85,7 +85,7 @@ struct ForgotPasswordView: View {
                         Button { dismiss() } label: {
                             Text("forgotPassword.backToLogin")
                                 .font(.footnote)
-                                .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
+                                .foregroundStyle(Color("BrandDarkGray"))
                         }
                     }
                 }
@@ -126,6 +126,8 @@ struct ForgotPasswordView: View {
     }
 }
 
-#Preview {
-    ForgotPasswordView()
+struct ForgotPasswordView_Previews: PreviewProvider {
+    static var previews: some View {
+        ForgotPasswordView()
+    }
 }

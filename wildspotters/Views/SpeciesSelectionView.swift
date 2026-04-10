@@ -1,4 +1,6 @@
 import SwiftUI
+import UIKit
+import Combine
 
 struct SpeciesSelectionView: View {
 
@@ -67,26 +69,38 @@ private struct SpeciesImageView: View {
     let speciesID: Int
     let catalogItem: CatalogSpecies?
 
+    @StateObject private var localImageLoader = LocalSpeciesImageLoader()
+
     var body: some View {
-        if let localURL = CatalogStore.shared.localImageURL(for: speciesID),
-           let uiImage = UIImage(contentsOfFile: localURL.path) {
-            Image(uiImage: uiImage)
-                .resizable()
-                .scaledToFill()
-        } else {
-            AsyncImage(url: catalogItem?.imageURL) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                case .failure:
-                    placeholder
-                default:
-                    ProgressView()
-                        .frame(height: 70)
+        Group {
+            if let localImage = localImageLoader.image {
+                Image(uiImage: localImage)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                AsyncImage(url: catalogItem?.imageURL) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    case .failure:
+                        placeholder
+                    default:
+                        ProgressView()
+                            .frame(height: 70)
+                    }
                 }
             }
+        }
+        .task(id: speciesID) {
+            localImageLoader.loadImage(
+                for: speciesID,
+                localURL: CatalogStore.shared.localImageURL(for: speciesID)
+            )
+        }
+        .onDisappear {
+            localImageLoader.cancel()
         }
     }
 
@@ -96,5 +110,59 @@ private struct SpeciesImageView: View {
                 Image(systemName: "pawprint.fill")
                     .foregroundStyle(Color("BrandGreen").opacity(0.3))
             }
+    }
+}
+
+@MainActor
+private final class LocalSpeciesImageLoader: ObservableObject {
+    @Published private(set) var image: UIImage?
+
+    private var loadTask: Task<Void, Never>?
+
+    func loadImage(for speciesID: Int, localURL: URL?) {
+        loadTask?.cancel()
+
+        guard let localURL else {
+            image = nil
+            return
+        }
+
+        if let cachedImage = LocalSpeciesImageCache.shared.image(for: speciesID) {
+            image = cachedImage
+            return
+        }
+
+        image = nil
+        let imagePath = localURL.path
+
+        loadTask = Task { [weak self] in
+            let loadedImage = UIImage(contentsOfFile: imagePath)
+            guard !Task.isCancelled else { return }
+            guard let self else { return }
+            self.image = loadedImage
+            if let loadedImage {
+                LocalSpeciesImageCache.shared.insert(loadedImage, for: speciesID)
+            }
+        }
+    }
+
+    func cancel() {
+        loadTask?.cancel()
+        loadTask = nil
+    }
+}
+
+@MainActor
+private final class LocalSpeciesImageCache {
+    static let shared = LocalSpeciesImageCache()
+
+    private let cache = NSCache<NSNumber, UIImage>()
+
+    func image(for speciesID: Int) -> UIImage? {
+        cache.object(forKey: NSNumber(value: speciesID))
+    }
+
+    func insert(_ image: UIImage, for speciesID: Int) {
+        cache.setObject(image, forKey: NSNumber(value: speciesID))
     }
 }

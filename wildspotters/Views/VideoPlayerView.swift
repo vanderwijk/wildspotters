@@ -2,17 +2,61 @@ import SwiftUI
 import AVFoundation
 
 /// Shared cache so SwiftUI view recreation reuses the same AVPlayer instance.
+@MainActor
 final class PlayerCache {
     static let shared = PlayerCache()
-    private var players: [URL: AVPlayer] = [:]
-    private var loopObservers: [URL: Any] = [:]
 
-    func player(for url: URL) -> AVPlayer {
-        if let existing = players[url] {
+    private struct CacheEntry {
+        let player: AVPlayer
+        let observer: Any
+        var activeReferences: Int
+        var isPrepared: Bool
+    }
+
+    private var entries: [URL: CacheEntry] = [:]
+
+    func retainPlayer(for url: URL) -> AVPlayer {
+        var entry = entry(for: url)
+        entry.activeReferences += 1
+        entries[url] = entry
+        return entry.player
+    }
+
+    func releasePlayer(for url: URL) {
+        guard var entry = entries[url] else { return }
+        entry.activeReferences = max(0, entry.activeReferences - 1)
+        entries[url] = entry
+        removeEntryIfUnused(for: url)
+    }
+
+    func preparePlayer(for url: URL) {
+        var entry = entry(for: url)
+        entry.isPrepared = true
+        entries[url] = entry
+    }
+
+    func consumePreparedPlayer(for url: URL) {
+        guard var entry = entries[url] else { return }
+        entry.isPrepared = false
+        entries[url] = entry
+    }
+
+    func releasePreparedPlayer(for url: URL) {
+        guard var entry = entries[url] else { return }
+        entry.isPrepared = false
+        entries[url] = entry
+        removeEntryIfUnused(for: url)
+    }
+
+    private func entry(for url: URL) -> CacheEntry {
+        if let existing = entries[url] {
             return existing
         }
+
         let item = AVPlayerItem(url: url)
         let player = AVPlayer(playerItem: item)
+        player.automaticallyWaitsToMinimizeStalling = false
+        player.currentItem?.preferredForwardBufferDuration = 5
 
         let observer = NotificationCenter.default.addObserver(
             forName: .AVPlayerItemDidPlayToEndTime,
@@ -22,18 +66,17 @@ final class PlayerCache {
             player?.seek(to: .zero)
             player?.play()
         }
-        loopObservers[url] = observer
 
-        players[url] = player
-        return player
+        let entry = CacheEntry(player: player, observer: observer, activeReferences: 0, isPrepared: false)
+        entries[url] = entry
+        return entry
     }
 
-    func removePlayer(for url: URL) {
-        if let observer = loopObservers.removeValue(forKey: url) {
-            NotificationCenter.default.removeObserver(observer)
-        }
-        players[url]?.pause()
-        players.removeValue(forKey: url)
+    private func removeEntryIfUnused(for url: URL) {
+        guard let entry = entries[url], entry.activeReferences == 0, !entry.isPrepared else { return }
+        entry.player.pause()
+        NotificationCenter.default.removeObserver(entry.observer)
+        entries.removeValue(forKey: url)
     }
 }
 
@@ -41,40 +84,18 @@ struct VideoPlayerView: UIViewRepresentable {
 
     let url: URL
     var isActive: Bool = true
-    var onSwipeLeft: (() -> Void)?
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(onSwipeLeft: onSwipeLeft)
-    }
 
     func makeUIView(context: Context) -> PlayerUIView {
-        let view = PlayerUIView()
-        let swipe = UISwipeGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleSwipe))
-        swipe.direction = .left
-        view.addGestureRecognizer(swipe)
-        return view
+        PlayerUIView()
     }
 
     func updateUIView(_ uiView: PlayerUIView, context: Context) {
-        context.coordinator.onSwipeLeft = onSwipeLeft
         uiView.attach(url: url)
         uiView.setActive(isActive)
     }
 
-    static func dismantleUIView(_ uiView: PlayerUIView, coordinator: Coordinator) {
+    static func dismantleUIView(_ uiView: PlayerUIView, coordinator: Void) {
         uiView.detach()
-    }
-
-    final class Coordinator: NSObject {
-        var onSwipeLeft: (() -> Void)?
-
-        init(onSwipeLeft: (() -> Void)?) {
-            self.onSwipeLeft = onSwipeLeft
-        }
-
-        @objc func handleSwipe() {
-            onSwipeLeft?()
-        }
     }
 }
 
@@ -98,6 +119,7 @@ final class PlayerUIView: UIView {
         super.init(frame: frame)
         avPlayerLayer.videoGravity = .resizeAspect
         backgroundColor = .black
+        isUserInteractionEnabled = false
         configureAudioSession()
         observeAppLifecycle()
     }
@@ -135,9 +157,10 @@ final class PlayerUIView: UIView {
 
     func attach(url: URL) {
         guard url != currentURL else { return }
-        currentURL = url
+        releaseCurrentPlayer(clearLayer: true)
         activeState = nil
-        player = PlayerCache.shared.player(for: url)
+        currentURL = url
+        player = PlayerCache.shared.retainPlayer(for: url)
     }
 
     func setActive(_ active: Bool) {
@@ -151,8 +174,8 @@ final class PlayerUIView: UIView {
     }
 
     func detach() {
+        releaseCurrentPlayer(clearLayer: false)
         activeState = nil
-        currentURL = nil
         if let observer = backgroundObserver {
             NotificationCenter.default.removeObserver(observer)
             backgroundObserver = nil
@@ -161,5 +184,15 @@ final class PlayerUIView: UIView {
             NotificationCenter.default.removeObserver(observer)
             foregroundObserver = nil
         }
+    }
+
+    private func releaseCurrentPlayer(clearLayer: Bool) {
+        guard let currentURL else { return }
+        player?.pause()
+        if clearLayer {
+            player = nil
+        }
+        PlayerCache.shared.releasePlayer(for: currentURL)
+        self.currentURL = nil
     }
 }

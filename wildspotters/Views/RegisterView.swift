@@ -37,12 +37,12 @@ struct RegisterView: View {
 
                         Text("login.subtitle")
                             .font(.subheadline)
-                            .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
+                            .foregroundStyle(Color("BrandDarkGray"))
                     }
 
                     Text("register.description")
                         .font(.subheadline)
-                        .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196).opacity(0.8))
+                        .foregroundStyle(Color("BrandDarkGray").opacity(0.8))
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     if registrationSuccessful {
@@ -67,7 +67,7 @@ struct RegisterView: View {
                                 .textContentType(.givenName)
                                 .textInputAutocapitalization(.words)
                                 .padding()
-                                .background(.white)
+                                .background(Color(.systemBackground))
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("BrandLightGreen"), lineWidth: 1))
                                 .onChange(of: firstName) { errorMessage = nil }
@@ -76,7 +76,7 @@ struct RegisterView: View {
                                 .textContentType(.familyName)
                                 .textInputAutocapitalization(.words)
                                 .padding()
-                                .background(.white)
+                                .background(Color(.systemBackground))
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("BrandLightGreen"), lineWidth: 1))
                                 .onChange(of: lastName) { errorMessage = nil }
@@ -87,7 +87,7 @@ struct RegisterView: View {
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
                                 .padding()
-                                .background(.white)
+                                .background(Color(.systemBackground))
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("BrandLightGreen"), lineWidth: 1))
                                 .onChange(of: email) { errorMessage = nil }
@@ -95,7 +95,7 @@ struct RegisterView: View {
                             SecureField(String(localized: "login.password"), text: $password)
                                 .textContentType(.newPassword)
                                 .padding()
-                                .background(.white)
+                                .background(Color(.systemBackground))
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("BrandLightGreen"), lineWidth: 1))
                                 .onChange(of: password) { errorMessage = nil }
@@ -130,7 +130,7 @@ struct RegisterView: View {
                         Button(action: onShowLogin) {
                             Text("register.alreadyHaveAccount")
                                 .font(.footnote)
-                                .foregroundStyle(Color(red: 0.196, green: 0.196, blue: 0.196))
+                                .foregroundStyle(Color("BrandDarkGray"))
                         }
                     }
                 }
@@ -177,6 +177,8 @@ struct RegisterView: View {
     }
 }
 
-#Preview {
-    RegisterView(authManager: AuthManager.shared, onShowLogin: {})
+struct RegisterView_Previews: PreviewProvider {
+    static var previews: some View {
+        RegisterView(authManager: AuthManager.shared, onShowLogin: {})
+    }
 }
