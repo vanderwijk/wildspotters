@@ -1,5 +1,6 @@
 import Combine
 import UIKit
+import OSLog
 
 @MainActor
 final class IdentificationViewModel: ObservableObject {
@@ -29,8 +30,8 @@ final class IdentificationViewModel: ObservableObject {
         case failed
     }
 
-    @Published private(set) var spots: [Spot] = []
-    @Published private(set) var currentIndex: Int = 0
+    @Published private(set) var currentSpot: Spot?
+    @Published private(set) var upcomingSpot: Spot?
     @Published private(set) var isLoading = false
     @Published private(set) var isEmpty = false
     @Published private(set) var errorMessage: String?
@@ -40,6 +41,7 @@ final class IdentificationViewModel: ObservableObject {
 
     let catalogStore = CatalogStore.shared
     private let apiClient = APIClient.shared
+    private let logger = Logger(subsystem: "nl.wildspotters.app", category: "Identification")
     private var countdownTask: Task<Void, Never>?
     private var preloadTask: Task<Void, Never>?
     private var preloadedSpot: Spot?
@@ -49,11 +51,6 @@ final class IdentificationViewModel: ObservableObject {
     private static let exclusionHistoryLimit = 12
 
     var countdownDuration: Int { Self.countdownDuration }
-
-    var currentSpot: Spot? {
-        guard currentIndex >= 0, currentIndex < spots.count else { return nil }
-        return spots[currentIndex]
-    }
 
     var isPanelVisible: Bool {
         switch panelState {
@@ -112,8 +109,7 @@ final class IdentificationViewModel: ObservableObject {
         }
     }
 
-    /// Fetches the next spot in the background. Stores it in `preloadedSpot`
-    /// without touching `spots`, so no @Published flash occurs.
+    /// Fetches the next spot in the background and keeps it off-screen until promoted.
     private func preloadNextSpot() {
         preloadTask?.cancel()
         preloadTask = Task {
@@ -138,6 +134,7 @@ final class IdentificationViewModel: ObservableObject {
         }
 
         preloadedSpot = spot
+        upcomingSpot = spot
 
         if let spot {
             PlayerCache.shared.preparePlayer(for: spot.videoURL)
@@ -151,13 +148,13 @@ final class IdentificationViewModel: ObservableObject {
     private func consumePreloadedSpot() -> Spot? {
         guard let spot = preloadedSpot else { return nil }
         preloadedSpot = nil
+        upcomingSpot = nil
         PlayerCache.shared.consumePreparedPlayer(for: spot.videoURL)
         return spot
     }
 
     private func showSpot(_ spot: Spot) {
-        spots = [spot]
-        currentIndex = 0
+        currentSpot = spot
         appendRecentSpotID(spot.id)
         isEmpty = false
         errorMessage = nil
@@ -173,8 +170,7 @@ final class IdentificationViewModel: ObservableObject {
     }
 
     private func showEmptyState() {
-        spots.removeAll()
-        currentIndex = 0
+        currentSpot = nil
         clearPreloadedSpot()
         isEmpty = true
     }
@@ -283,7 +279,11 @@ final class IdentificationViewModel: ObservableObject {
 
     private func submitSkip(for spot: Spot) async {
         let skip = Identification(spotID: spot.id, speciesID: Self.skipTermID)
-        _ = try? await apiClient.submitIdentification(skip)
+        do {
+            _ = try await apiClient.submitIdentification(skip)
+        } catch {
+            logger.error("Skip submission failed for spot \(spot.id, privacy: .public): \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     deinit {

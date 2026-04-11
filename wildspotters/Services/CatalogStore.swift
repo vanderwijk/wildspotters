@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import OSLog
 
 struct CatalogSpecies: Codable, Identifiable, LocalizedSpeciesNameProviding {
     let id: Int
@@ -36,13 +37,17 @@ final class CatalogStore: ObservableObject {
     private let imageManifestURL: URL
     private let imagePrefetchConcurrencyLimit = 4
     private let session: URLSession
+    private let logger = Logger(subsystem: "nl.wildspotters.app", category: "CatalogStore")
 
     private init() {
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 30
         session = URLSession(configuration: configuration)
 
-        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first ?? FileManager.default.temporaryDirectory
+        if FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first == nil {
+            logger.error("Caches directory could not be resolved. Falling back to temporary directory.")
+        }
         cacheURL = caches.appendingPathComponent("species_catalog.json")
         etagURL = caches.appendingPathComponent("species_catalog_etag.txt")
         imagesCacheDirectory = caches.appendingPathComponent("species_images", isDirectory: true)
@@ -61,7 +66,7 @@ final class CatalogStore: ObservableObject {
     }
 
     func refresh() async {
-        let url = URL(string: "https://wildspotters.nl/wp-json/wildspotters/v1/species-catalog")!
+        let url = APIClient.endpoint("species-catalog")
         var request = URLRequest(url: url)
         if let token = KeychainService.getToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -81,11 +86,19 @@ final class CatalogStore: ObservableObject {
             species = Dictionary(uniqueKeysWithValues: catalog.species.map { ($0.id, $0) })
 
             // Persist catalog
-            try? data.write(to: cacheURL)
+            do {
+                try data.write(to: cacheURL, options: .atomic)
+            } catch {
+                logger.error("Failed to persist species catalog cache: \(error.localizedDescription, privacy: .public)")
+            }
             let newEtag = http.value(forHTTPHeaderField: "ETag")
             etag = newEtag
             if let newEtag {
-                try? newEtag.write(to: etagURL, atomically: true, encoding: .utf8)
+                do {
+                    try newEtag.write(to: etagURL, atomically: true, encoding: .utf8)
+                } catch {
+                    logger.error("Failed to persist species catalog ETag: \(error.localizedDescription, privacy: .public)")
+                }
             }
 
             // Pre-fetch images that aren't cached yet
@@ -145,15 +158,55 @@ final class CatalogStore: ObservableObject {
     }
 
     private func saveImageManifest(_ manifest: [String: String]) {
-        guard let data = try? JSONEncoder().encode(manifest) else { return }
-        try? data.write(to: imageManifestURL)
+        let data: Data
+        do {
+            data = try JSONEncoder().encode(manifest)
+        } catch {
+            logger.error("Failed to encode image manifest: \(error.localizedDescription, privacy: .public)")
+            return
+        }
+
+        do {
+            try data.write(to: imageManifestURL, options: .atomic)
+        } catch {
+            logger.error("Failed to persist image manifest: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     private func loadFromDisk() {
-        etag = try? String(contentsOf: etagURL, encoding: .utf8)
-        guard let data = try? Data(contentsOf: cacheURL),
-              let catalog = try? JSONDecoder().decode(CatalogResponse.self, from: data) else { return }
+        do {
+            etag = try String(contentsOf: etagURL, encoding: .utf8)
+        } catch {
+            if !Self.isFileNotFound(error) {
+                logger.debug("Unexpected ETag load failure: \(error.localizedDescription, privacy: .public)")
+            }
+            etag = nil
+        }
+
+        let data: Data
+        do {
+            data = try Data(contentsOf: cacheURL)
+        } catch {
+            if !Self.isFileNotFound(error) {
+                logger.debug("Unexpected catalog cache load failure: \(error.localizedDescription, privacy: .public)")
+            }
+            return
+        }
+
+        let catalog: CatalogResponse
+        do {
+            catalog = try JSONDecoder().decode(CatalogResponse.self, from: data)
+        } catch {
+            logger.error("Failed to decode persisted catalog cache: \(error.localizedDescription, privacy: .public)")
+            return
+        }
+
         species = Dictionary(uniqueKeysWithValues: catalog.species.map { ($0.id, $0) })
+    }
+
+    private static func isFileNotFound(_ error: Error) -> Bool {
+        let nsError = error as NSError
+        return nsError.domain == NSCocoaErrorDomain && nsError.code == NSFileReadNoSuchFileError
     }
 }
 
@@ -165,10 +218,19 @@ private struct PendingImageDownload {
 }
 
 private func downloadImage(_ pendingDownload: PendingImageDownload, session: URLSession) async -> (Int, String)? {
-    guard let data = try? await session.data(from: pendingDownload.remoteURL).0 else {
+    do {
+        let (data, response) = try await session.data(from: pendingDownload.remoteURL)
+        guard let http = response as? HTTPURLResponse,
+              (200...299).contains(http.statusCode),
+              let mimeType = http.mimeType,
+              mimeType.hasPrefix("image/"),
+              !data.isEmpty else {
+            return nil
+        }
+
+        try data.write(to: pendingDownload.destination, options: .atomic)
+        return (pendingDownload.speciesID, pendingDownload.remoteURLString)
+    } catch {
         return nil
     }
-
-    try? data.write(to: pendingDownload.destination)
-    return (pendingDownload.speciesID, pendingDownload.remoteURLString)
 }

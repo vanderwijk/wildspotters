@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct wildspottersApp: App {
+struct WildspottersApp: App {
 
     @StateObject private var authManager = AuthManager.shared
     @State private var showLogin = false
@@ -19,7 +19,7 @@ struct wildspottersApp: App {
                         successMessage: activationSuccessMessage
                     )
                 } else {
-                    RegisterView(authManager: authManager, onShowLogin: { showLogin = true })
+                    RegisterView(onShowLogin: { showLogin = true })
                 }
             }
             .animation(.default, value: authManager.isAuthenticated)
@@ -27,12 +27,19 @@ struct wildspottersApp: App {
             .onOpenURL { url in
                 guard url.scheme == "wildspotters", url.host == "activated" else { return }
                 let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-                if let token = components?.queryItems?.first(where: { $0.name == "token" })?.value,
-                   (try? authManager.loginWithToken(token)) != nil {
-                    // token stored — isAuthenticated will flip to true automatically
-                } else {
+                guard let token = components?.queryItems?.first(where: { $0.name == "token" })?.value else {
                     activationSuccessMessage = String(localized: "activation.success")
                     showLogin = true
+                    return
+                }
+
+                Task {
+                    do {
+                        try await authManager.loginWithToken(token)
+                    } catch {
+                        activationSuccessMessage = String(localized: "activation.success")
+                        showLogin = true
+                    }
                 }
             }
         }

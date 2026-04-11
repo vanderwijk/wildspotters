@@ -3,8 +3,17 @@ import Foundation
 final class APIClient: Sendable {
 
     static let shared = APIClient()
+    static let baseURL: URL = {
+        guard let url = URL(string: "https://wildspotters.nl/wp-json/wildspotters/v1") else {
+            preconditionFailure("Invalid API base URL configuration")
+        }
+        return url
+    }()
 
-    private let baseURL = URL(string: "https://wildspotters.nl/wp-json/wildspotters/v1")!
+    static func endpoint(_ path: String) -> URL {
+        baseURL.appendingPathComponent(path)
+    }
+
     private let session: URLSession
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
@@ -20,7 +29,7 @@ final class APIClient: Sendable {
     // MARK: - Auth
 
     func login(username: String, password: String) async throws -> LoginResponse {
-        var request = URLRequest(url: baseURL.appendingPathComponent("login"))
+        var request = URLRequest(url: Self.endpoint("login"))
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
 
@@ -71,6 +80,13 @@ final class APIClient: Sendable {
         return response.spot
     }
 
+    func validateToken(_ token: String) async throws {
+        var request = URLRequest(url: Self.endpoint("spot-videos/next"))
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        _ = try await performStatusOnly(request)
+    }
+
     // MARK: - Identifications
 
     func submitIdentification(_ identification: Identification) async throws -> IdentificationPanel? {
@@ -89,7 +105,7 @@ final class APIClient: Sendable {
         queryItems: [URLQueryItem] = [],
         authenticated: Bool = false
     ) async throws -> T {
-        var url = baseURL.appendingPathComponent(path)
+        var url = Self.endpoint(path)
         if !queryItems.isEmpty {
             guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
                 throw APIError.invalidResponse
@@ -111,7 +127,7 @@ final class APIClient: Sendable {
         body: B,
         authenticated: Bool = false
     ) async throws -> T {
-        var request = URLRequest(url: baseURL.appendingPathComponent(path))
+        var request = URLRequest(url: Self.endpoint(path))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try encoder.encode(body)
@@ -170,6 +186,33 @@ final class APIClient: Sendable {
             return try decoder.decode(T.self, from: data.isEmpty ? Data("{}".utf8) : data)
         } catch {
             throw APIError.decodingFailed(error)
+        }
+    }
+
+    private func performStatusOnly(_ request: URLRequest) async throws -> HTTPURLResponse {
+        let response: URLResponse
+
+        do {
+            (_, response) = try await session.data(for: request)
+        } catch {
+            throw APIError.networkError(error)
+        }
+
+        guard let http = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+
+        switch http.statusCode {
+        case 200...299:
+            return http
+        case 401:
+            throw APIError.unauthorized
+        case 403:
+            throw APIError.notActivated
+        case 429:
+            throw APIError.rateLimited
+        default:
+            throw APIError.serverError(statusCode: http.statusCode, message: nil)
         }
     }
 }

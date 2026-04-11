@@ -10,6 +10,7 @@ final class PlayerCache {
         let player: AVPlayer
         let observer: Any
         var activeReferences: Int
+        var activePlaybackClaims: Int
         var isPrepared: Bool
     }
 
@@ -27,6 +28,22 @@ final class PlayerCache {
         entry.activeReferences = max(0, entry.activeReferences - 1)
         entries[url] = entry
         removeEntryIfUnused(for: url)
+    }
+
+    func activatePlayback(for url: URL) {
+        guard var entry = entries[url] else { return }
+        entry.activePlaybackClaims += 1
+        entries[url] = entry
+        entry.player.play()
+    }
+
+    func deactivatePlayback(for url: URL) {
+        guard var entry = entries[url] else { return }
+        entry.activePlaybackClaims = max(0, entry.activePlaybackClaims - 1)
+        entries[url] = entry
+        if entry.activePlaybackClaims == 0 {
+            entry.player.pause()
+        }
     }
 
     func preparePlayer(for url: URL) {
@@ -67,7 +84,7 @@ final class PlayerCache {
             player?.play()
         }
 
-        let entry = CacheEntry(player: player, observer: observer, activeReferences: 0, isPrepared: false)
+        let entry = CacheEntry(player: player, observer: observer, activeReferences: 0, activePlaybackClaims: 0, isPrepared: false)
         entries[url] = entry
         return entry
     }
@@ -165,12 +182,18 @@ final class PlayerUIView: UIView {
 
     func setActive(_ active: Bool) {
         guard active != activeState else { return }
-        activeState = active
-        if active {
-            player?.play()
-        } else {
-            player?.pause()
+        guard let currentURL else {
+            activeState = active
+            return
         }
+
+        if active {
+            PlayerCache.shared.activatePlayback(for: currentURL)
+        } else {
+            PlayerCache.shared.deactivatePlayback(for: currentURL)
+        }
+
+        activeState = active
     }
 
     func detach() {
@@ -188,7 +211,11 @@ final class PlayerUIView: UIView {
 
     private func releaseCurrentPlayer(clearLayer: Bool) {
         guard let currentURL else { return }
-        player?.pause()
+
+        if activeState == true {
+            PlayerCache.shared.deactivatePlayback(for: currentURL)
+        }
+
         if clearLayer {
             player = nil
         }

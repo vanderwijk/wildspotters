@@ -17,7 +17,8 @@ final class AuthManager: ObservableObject {
         isAuthenticated = true
     }
 
-    func loginWithToken(_ token: String) throws {
+    func loginWithToken(_ token: String) async throws {
+        try await APIClient.shared.validateToken(token)
         try KeychainService.saveToken(token)
         isAuthenticated = true
     }

@@ -7,6 +7,7 @@ struct SpeciesSelectionView: View {
     let species: [Species]
     let catalog: [Int: CatalogSpecies]
     let isDisabled: Bool
+    let dimWhenDisabled: Bool
     let onSelect: (Species) -> Void
 
     private let columns = [
@@ -18,7 +19,6 @@ struct SpeciesSelectionView: View {
             ForEach(species) { item in
                 let catalogItem = catalog[item.id]
                 Button {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     onSelect(item)
                 } label: {
                     VStack(spacing: 0) {
@@ -47,12 +47,26 @@ struct SpeciesSelectionView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(isDisabled)
-                .opacity(isDisabled ? 0.5 : 1)
+                .opacity(isDisabled && dimWhenDisabled ? 0.5 : 1)
                 .accessibilityLabel(item.displayName)
                 .accessibilityHint(String(localized: "accessibility.speciesHint"))
             }
         }
         .padding(.horizontal)
+    }
+
+    init(
+        species: [Species],
+        catalog: [Int: CatalogSpecies],
+        isDisabled: Bool,
+        dimWhenDisabled: Bool = true,
+        onSelect: @escaping (Species) -> Void
+    ) {
+        self.species = species
+        self.catalog = catalog
+        self.isDisabled = isDisabled
+        self.dimWhenDisabled = dimWhenDisabled
+        self.onSelect = onSelect
     }
 
     private var speciesPlaceholder: some View {
@@ -118,9 +132,12 @@ private final class LocalSpeciesImageLoader: ObservableObject {
     @Published private(set) var image: UIImage?
 
     private var loadTask: Task<Void, Never>?
+    private var currentLoadToken = UUID()
 
     func loadImage(for speciesID: Int, localURL: URL?) {
         loadTask?.cancel()
+        currentLoadToken = UUID()
+        let loadToken = currentLoadToken
 
         guard let localURL else {
             image = nil
@@ -135,10 +152,14 @@ private final class LocalSpeciesImageLoader: ObservableObject {
         image = nil
         let imagePath = localURL.path
 
-        loadTask = Task { [weak self] in
-            let loadedImage = UIImage(contentsOfFile: imagePath)
+        loadTask = Task {
+            let loadedImage = await Task.detached(priority: .utility) {
+                Self.decodeImage(at: imagePath)
+            }.value
+
             guard !Task.isCancelled else { return }
-            guard let self else { return }
+            guard self.currentLoadToken == loadToken else { return }
+
             self.image = loadedImage
             if let loadedImage {
                 LocalSpeciesImageCache.shared.insert(loadedImage, for: speciesID)
@@ -149,6 +170,10 @@ private final class LocalSpeciesImageLoader: ObservableObject {
     func cancel() {
         loadTask?.cancel()
         loadTask = nil
+    }
+
+    nonisolated private static func decodeImage(at path: String) -> UIImage? {
+        UIImage(contentsOfFile: path)
     }
 }
 

@@ -2,7 +2,6 @@ import SwiftUI
 
 struct RegisterView: View {
 
-    @ObservedObject var authManager: AuthManager
     var onShowLogin: () -> Void
 
     @State private var firstName = ""
@@ -179,6 +178,6 @@ struct RegisterView: View {
 
 struct RegisterView_Previews: PreviewProvider {
     static var previews: some View {
-        RegisterView(authManager: AuthManager.shared, onShowLogin: {})
+        RegisterView(onShowLogin: {})
     }
 }
