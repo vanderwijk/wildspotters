@@ -58,3 +58,10 @@ Core user flow:
 - Prefer simple, explicit code over abstraction-heavy patterns.
 - Keep state ownership clear (`@MainActor` for UI state mutations).
 - Add comments only when behavior is non-obvious.
+
+## Future Enhancements
+- Add a map icon to the footer bar that opens a mapkit map using the stored coordinates of the location of the camera that is being viewed along with the location name and description that are stored in the WordPress database.
+- Add a comment icon to the footer bar that opens a panel with all comments that have been made to this spot and allows the logged in user to add their comment.
+- Fix dark mode (especially the form fields for the login and registration screens look very ugly now)
+- Add a hamburger menu with access to the logout link and a profile edit.
+- Add a trophy icon to the footer bar with direct access to the user rankings. Note that the ranking algorithm needs to be fixed first as the current web version is too rudimentary.

@@ -61,6 +61,9 @@ struct IdentificationView: View {
                         .buttonStyle(.borderless)
                     }
                 }
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    footerBar
+                }
                 .task {
                     await viewModel.loadInitial()
                 }
@@ -69,6 +72,23 @@ struct IdentificationView: View {
                     viewModel.tearDown()
                 }
             }
+        }
+    }
+
+    // MARK: - Footer
+
+    private var footerBar: some View {
+        VStack(spacing: 0) {
+            Image("FooterGrass")
+                .resizable()
+                .scaledToFill()
+                .frame(height: 50)
+                .clipped()
+                .allowsHitTesting(false)
+
+            Color("BrandDarkGreen")
+                .frame(height: 30)
+                .background(Color("BrandDarkGreen").ignoresSafeArea(edges: .bottom))
         }
     }
 
