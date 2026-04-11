@@ -65,3 +65,5 @@ Core user flow:
 - Fix dark mode (especially the form fields for the login and registration screens look very ugly now)
 - Add a hamburger menu with access to the logout link and a profile edit.
 - Add a trophy icon to the footer bar with direct access to the user rankings. Note that the ranking algorithm needs to be fixed first as the current web version is too rudimentary.
+- Disable landscape view on iPhone because it looks weird.
+- Improve iPad support
