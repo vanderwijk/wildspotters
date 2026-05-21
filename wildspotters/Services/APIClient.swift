@@ -49,6 +49,32 @@ final class APIClient: Sendable {
         let _: ForgotPasswordResponse = try await post("forgot-password", body: ForgotPasswordRequest(email: email))
     }
 
+    func resetPassword(token: String, login: String?, password: String) async throws {
+        struct ResetPasswordRequest: Encodable {
+            let token: String
+            let key: String
+            let login: String?
+            let password: String
+            let newPassword: String
+
+            enum CodingKeys: String, CodingKey {
+                case token, key, login, password
+                case newPassword = "new_password"
+            }
+        }
+        struct ResetPasswordResponse: Decodable { let success: Bool? }
+        let _: ResetPasswordResponse = try await post(
+            "reset-password",
+            body: ResetPasswordRequest(
+                token: token,
+                key: token,
+                login: login,
+                password: password,
+                newPassword: password
+            )
+        )
+    }
+
     func register(
         firstName: String,
         lastName: String,
@@ -244,5 +270,4 @@ final class APIClient: Sendable {
 private struct ServerError: Decodable {
     let message: String
 }
-
 

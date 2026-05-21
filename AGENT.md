@@ -5,6 +5,7 @@ Wildspotters is an iOS app where users identify animal species from short spot v
 
 Core user flow:
 1. Authenticate (register/login or activation deep link — Universal Link `https://wildspotters.nl/app/activate?token=…` or legacy `wildspotters://activated`)
+   - Password reset supports reset-email requests plus reset deep links such as `https://wildspotters.nl/app/reset-password?token=…` and `wildspotters://reset-password?token=…`.
 2. Load the next spot video
 3. Select a species (or skip)
 4. See community verdict feedback
