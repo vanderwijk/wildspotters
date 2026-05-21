@@ -4,7 +4,7 @@
 Wildspotters is an iOS app where users identify animal species from short spot videos.
 
 Core user flow:
-1. Authenticate (register/login or activation deep link)
+1. Authenticate (register/login or activation deep link — Universal Link `https://wildspotters.nl/app/activate?token=…` or legacy `wildspotters://activated`)
 2. Load the next spot video
 3. Select a species (or skip)
 4. See community verdict feedback
@@ -21,6 +21,8 @@ Core user flow:
 ### Entry and App State
 - `wildspotters/wildspottersApp.swift`
 - Controls auth routing between register/login and identification flow.
+- Handles activation URLs from Universal Links and the `wildspotters://` custom scheme.
+- `wildspotters/wildspotters.entitlements` — Associated Domains (`applinks:wildspotters.nl`).
 
 ### Services
 - `wildspotters/Services/APIClient.swift`

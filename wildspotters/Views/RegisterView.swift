@@ -11,6 +11,8 @@ struct RegisterView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var registrationSuccessful = false
+    /// Unix time when this screen opened (anti-spam timing check on the server).
+    @State private var formStartedAt = Int(Date().timeIntervalSince1970)
 
     private var canSubmit: Bool {
         !firstName.trimmingCharacters(in: .whitespaces).isEmpty
@@ -166,7 +168,8 @@ struct RegisterView: View {
                     firstName: firstName.trimmingCharacters(in: .whitespaces),
                     lastName: lastName.trimmingCharacters(in: .whitespaces),
                     email: email.trimmingCharacters(in: .whitespaces),
-                    password: password
+                    password: password,
+                    formStartedAt: formStartedAt
                 )
                 registrationSuccessful = true
             } catch {

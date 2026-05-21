@@ -49,23 +49,45 @@ final class APIClient: Sendable {
         let _: ForgotPasswordResponse = try await post("forgot-password", body: ForgotPasswordRequest(email: email))
     }
 
-    func register(firstName: String, lastName: String, email: String, password: String) async throws {
+    func register(
+        firstName: String,
+        lastName: String,
+        email: String,
+        password: String,
+        formStartedAt: Int? = nil
+    ) async throws {
         struct RegistrationRequest: Encodable {
             let firstName: String
             let lastName: String
             let email: String
             let password: String
+            let formStartedAt: Int?
+            let registrationSource = "ios"
             enum CodingKeys: String, CodingKey {
                 case firstName = "first_name"
                 case lastName  = "last_name"
                 case email, password
+                case formStartedAt = "form_started_at"
+                case registrationSource = "registration_source"
             }
         }
         struct RegistrationResponse: Decodable { let success: Bool? }
         let _: RegistrationResponse = try await post(
             "register",
-            body: RegistrationRequest(firstName: firstName, lastName: lastName, email: email, password: password)
+            body: RegistrationRequest(
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                password: password,
+                formStartedAt: formStartedAt
+            )
         )
+    }
+
+    /// Exchange the activation key from the email link for a login JWT.
+    func activateAccount(activationToken: String) async throws -> LoginResponse {
+        struct ActivateRequest: Encodable { let token: String }
+        return try await post("activate", body: ActivateRequest(token: activationToken))
     }
 
     // MARK: - Spots

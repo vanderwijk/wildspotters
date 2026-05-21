@@ -56,6 +56,23 @@
         }
       }
     },
+    "activation.failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We could not activate your account. The link may have expired. Try logging in or register again."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We konden je account niet activeren. De link is mogelijk verlopen. Probeer in te loggen of registreer opnieuw."
+          }
+        }
+      }
+    },
     "app.name" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -640,13 +657,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Spot them all! Create a free account to get started. After signing up, we'll send you an email to activate your account."
+            "value" : "Spot them all! Create a free account to get started. We'll email you an activation link. Open it on any device, then sign in here with your password."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Spot ze allemaal! Maak een gratis account aan om mee te doen. Na registratie ontvang je een e-mail om je account te activeren."
+            "value" : "Spot ze allemaal! Maak een gratis account aan om mee te doen. We sturen je een activatielink per e-mail. Open die op elk apparaat en log daarna hier in met je wachtwoord."
           }
         }
       }
@@ -725,13 +742,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Registration successful! Please check your email to activate your account before logging in."
+            "value" : "We sent an activation email. Open it on any phone or computer, tap the link, then sign in here with your email and password."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Registratie gelukt! Controleer je e-mail om je account te activeren voordat je inlogt."
+            "value" : "We hebben een activatiemail gestuurd. Open die op je telefoon of computer, tik op de link en log daarna hier in met je e-mailadres en wachtwoord."
           }
         }
       }
