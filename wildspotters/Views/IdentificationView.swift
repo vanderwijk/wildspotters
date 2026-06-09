@@ -10,6 +10,7 @@ struct IdentificationView: View {
     @State private var committedSwipeOffset: CGFloat = 0
     @State private var suppressSpeciesTap = false
     @State private var speciesTapResetTask: Task<Void, Never>?
+    @State private var isProfileDrawerPresented = false
 
     private let swipeCommitThreshold: CGFloat = 72
 
@@ -19,23 +20,61 @@ struct IdentificationView: View {
                 ZStack {
                     backgroundView(height: geometry.size.height)
 
-                    if viewModel.isLoading && viewModel.currentSpot == nil {
-                        ProgressView(String(localized: "identification.loading"))
-                            .tint(Color("BrandDarkGreen"))
-                            .foregroundStyle(Color("BrandDarkGray"))
-                    } else if let spot = viewModel.currentSpot {
-                        spotPager(spot, containerWidth: geometry.size.width)
-                    } else if viewModel.isEmpty {
-                        ScrollView {
-                            emptyContent
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .padding(.top, 120)
+                    Group {
+                        if viewModel.isLoading && viewModel.currentSpot == nil {
+                            ProgressView(String(localized: "identification.loading"))
+                                .tint(Color("BrandDarkGreen"))
+                                .foregroundStyle(Color("BrandDarkGray"))
+                        } else if let spot = viewModel.currentSpot {
+                            spotPager(spot, containerWidth: geometry.size.width)
+                        } else if viewModel.isEmpty {
+                            ScrollView {
+                                emptyContent
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .padding(.top, 120)
+                            }
+                            .refreshable {
+                                await viewModel.loadNextSpot()
+                            }
+                        } else if let error = viewModel.errorMessage {
+                            errorContent(error)
                         }
-                        .refreshable {
-                            await viewModel.loadNextSpot()
+                    }
+                    .allowsHitTesting(!isProfileDrawerPresented)
+                    .accessibilityHidden(isProfileDrawerPresented)
+
+                    if isProfileDrawerPresented {
+                        VStack(spacing: 0) {
+                            Spacer()
+                            footerBar
                         }
-                    } else if let error = viewModel.errorMessage {
-                        errorContent(error)
+                        .allowsHitTesting(false)
+                        .zIndex(9)
+
+                        Color.black.opacity(0.28)
+                            .ignoresSafeArea()
+                            .onTapGesture {
+                                withAnimation(.spring(response: 0.28, dampingFraction: 0.9)) {
+                                    isProfileDrawerPresented = false
+                                }
+                            }
+                            .transition(.opacity)
+                            .zIndex(10)
+
+                        HStack(spacing: 0) {
+                            Spacer(minLength: 44)
+                            ProfileDrawerView(
+                                authManager: authManager,
+                                onClose: {
+                                    withAnimation(.spring(response: 0.28, dampingFraction: 0.9)) {
+                                        isProfileDrawerPresented = false
+                                    }
+                                }
+                            )
+                        }
+                        .ignoresSafeArea(edges: .bottom)
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                        .zIndex(11)
                     }
                 }
                 .navigationBarTitleDisplayMode(.inline)
@@ -59,10 +98,28 @@ struct IdentificationView: View {
                                 .frame(width: 24, height: 24)
                         }
                         .buttonStyle(.borderless)
+                        .disabled(isProfileDrawerPresented)
+                        .accessibilityHidden(isProfileDrawerPresented)
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            withAnimation(.spring(response: 0.28, dampingFraction: 0.9)) {
+                                isProfileDrawerPresented.toggle()
+                            }
+                        } label: {
+                            Image(systemName: isProfileDrawerPresented ? "xmark" : "line.3.horizontal")
+                                .font(.title3.weight(.semibold))
+                                .frame(width: 34, height: 34)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(Color("BrandDarkGray"))
+                        .accessibilityLabel(isProfileDrawerPresented ? "Sluit menu" : "Open menu")
                     }
                 }
                 .safeAreaInset(edge: .bottom, spacing: 0) {
-                    footerBar
+                    if !isProfileDrawerPresented {
+                        footerBar
+                    }
                 }
                 .task {
                     await viewModel.loadInitial()

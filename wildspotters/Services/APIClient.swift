@@ -75,6 +75,63 @@ final class APIClient: Sendable {
         )
     }
 
+    func getProfile() async throws -> ProfileUser {
+        struct ProfileResponse: Decodable { let user: ProfileUser }
+        let response: ProfileResponse = try await get("profile", authenticated: true)
+        return response.user
+    }
+
+    func updateProfile(
+        firstName: String,
+        lastName: String,
+        email: String,
+        currentPassword: String?
+    ) async throws -> ProfileUpdateResponse {
+        struct ProfileUpdateRequest: Encodable {
+            let firstName: String
+            let lastName: String
+            let email: String
+            let currentPassword: String?
+
+            enum CodingKeys: String, CodingKey {
+                case firstName = "first_name"
+                case lastName = "last_name"
+                case email
+                case currentPassword = "current_password"
+            }
+        }
+
+        return try await post(
+            "profile",
+            body: ProfileUpdateRequest(
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                currentPassword: currentPassword?.isEmpty == true ? nil : currentPassword
+            ),
+            authenticated: true,
+            logoutOnUnauthorized: false
+        )
+    }
+
+    func deleteProfile(currentPassword: String) async throws {
+        struct DeleteProfileRequest: Encodable {
+            let currentPassword: String
+
+            enum CodingKeys: String, CodingKey {
+                case currentPassword = "current_password"
+            }
+        }
+        struct DeleteProfileResponse: Decodable { let success: Bool? }
+
+        let _: DeleteProfileResponse = try await delete(
+            "profile",
+            body: DeleteProfileRequest(currentPassword: currentPassword),
+            authenticated: true,
+            logoutOnUnauthorized: false
+        )
+    }
+
     func register(
         firstName: String,
         lastName: String,
@@ -173,14 +230,37 @@ final class APIClient: Sendable {
     private func post<T: Decodable, B: Encodable>(
         _ path: String,
         body: B,
-        authenticated: Bool = false
+        authenticated: Bool = false,
+        logoutOnUnauthorized: Bool = true
     ) async throws -> T {
         var request = URLRequest(url: Self.endpoint(path))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try encoder.encode(body)
         if authenticated { try applyAuth(&request) }
-        return try await perform(request, authenticated: authenticated)
+        return try await perform(
+            request,
+            authenticated: authenticated,
+            logoutOnUnauthorized: logoutOnUnauthorized
+        )
+    }
+
+    private func delete<T: Decodable, B: Encodable>(
+        _ path: String,
+        body: B,
+        authenticated: Bool = false,
+        logoutOnUnauthorized: Bool = true
+    ) async throws -> T {
+        var request = URLRequest(url: Self.endpoint(path))
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try encoder.encode(body)
+        if authenticated { try applyAuth(&request) }
+        return try await perform(
+            request,
+            authenticated: authenticated,
+            logoutOnUnauthorized: logoutOnUnauthorized
+        )
     }
 
     private func applyAuth(_ request: inout URLRequest) throws {
@@ -190,7 +270,12 @@ final class APIClient: Sendable {
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     }
 
-    private func perform<T: Decodable>(_ request: URLRequest, isLogin: Bool = false, authenticated: Bool = false) async throws -> T {
+    private func perform<T: Decodable>(
+        _ request: URLRequest,
+        isLogin: Bool = false,
+        authenticated: Bool = false,
+        logoutOnUnauthorized: Bool = true
+    ) async throws -> T {
         let data: Data
         let response: URLResponse
 
@@ -211,10 +296,12 @@ final class APIClient: Sendable {
             if isLogin {
                 throw APIError.invalidCredentials
             }
-            if authenticated {
+            if authenticated && logoutOnUnauthorized {
                 await MainActor.run { AuthManager.shared.logout() }
+                throw APIError.unauthorized
             }
-            throw APIError.unauthorized
+            let message = try? decoder.decode(ServerError.self, from: data).message
+            throw APIError.serverError(statusCode: http.statusCode, message: message)
         case 403:
             throw APIError.notActivated
         case 409:
@@ -270,4 +357,3 @@ final class APIClient: Sendable {
 private struct ServerError: Decodable {
     let message: String
 }
-
