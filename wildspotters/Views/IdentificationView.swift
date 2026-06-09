@@ -98,12 +98,12 @@ struct IdentificationView: View {
         ZStack(alignment: .bottom) {
             if let nextSpot = viewModel.upcomingSpot, nextSpot.id != spot.id {
                 // Intentionally render the full incoming card for a seamless swipe handoff without pop-in.
-                spotContent(nextSpot, isPreview: true)
+                spotContent(nextSpot, isPreview: true, containerWidth: containerWidth)
                     .offset(x: nextCardOffset(containerWidth: containerWidth))
                     .allowsHitTesting(false)
             }
 
-            spotContent(spot)
+            spotContent(spot, containerWidth: containerWidth)
                 .id(spot.id)
 
             if viewModel.isAdvancing {
@@ -133,7 +133,7 @@ struct IdentificationView: View {
 
     // MARK: - Subviews
 
-    private func spotContent(_ spot: Spot, isPreview: Bool = false) -> some View {
+    private func spotContent(_ spot: Spot, isPreview: Bool = false, containerWidth: CGFloat) -> some View {
         VStack(spacing: 0) {
             VideoPlayerView(
                 url: spot.videoURL,
@@ -151,7 +151,7 @@ struct IdentificationView: View {
                     SpeciesSelectionView(
                         species: viewModel.selectableSpecies(for: spot),
                         catalog: viewModel.catalogStore.species,
-                        isDisabled: false,
+                        isDisabled: !isSpeciesSelectionEnabled,
                         dimWhenDisabled: false,
                     ) { selected in
                         guard isSpeciesSelectionEnabled else { return }
@@ -160,6 +160,7 @@ struct IdentificationView: View {
                         }
                     }
                     .allowsHitTesting(isSpeciesSelectionEnabled)
+                    .accessibilityHidden(!isSpeciesSelectionEnabled)
                 }
                 .padding(.vertical, 16)
             }
@@ -169,12 +170,13 @@ struct IdentificationView: View {
         .offset(x: isPreview ? 0 : cardOffset)
         .opacity(isPreview ? 1 : cardOpacity)
         .contentShape(Rectangle())
-        .simultaneousGesture(nextSpotSwipeGesture)
+        .simultaneousGesture(nextSpotSwipeGesture(containerWidth: containerWidth))
         .allowsHitTesting(!viewModel.isAdvancing)
         .animation(.interactiveSpring(response: 0.22, dampingFraction: 0.86), value: swipeTranslation)
+        .animation(.interactiveSpring(response: 0.22, dampingFraction: 0.86), value: committedSwipeOffset)
     }
 
-    private var nextSpotSwipeGesture: some Gesture {
+    private func nextSpotSwipeGesture(containerWidth: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: 30)
             .onChanged { value in
                 if shouldSuppressSpeciesTap(for: value) {
@@ -191,7 +193,7 @@ struct IdentificationView: View {
                 state = min(0, value.translation.width)
             }
             .onEnded { value in
-                handleNextSpotSwipe(value)
+                handleNextSpotSwipe(value, containerWidth: containerWidth)
                 scheduleSpeciesTapReset()
             }
     }
@@ -205,7 +207,7 @@ struct IdentificationView: View {
         }
     }
 
-    private func handleNextSpotSwipe(_ value: DragGesture.Value) {
+    private func handleNextSpotSwipe(_ value: DragGesture.Value, containerWidth: CGFloat) {
         guard canHandleSwipe(value) else {
             return
         }
@@ -218,7 +220,7 @@ struct IdentificationView: View {
 
         let spotID = viewModel.currentSpot?.id
         committedSwipeSpotID = spotID
-        committedSwipeOffset = min(0, value.translation.width)
+        committedSwipeOffset = -containerWidth
 
         Task {
             await viewModel.skipCurrentSpot()

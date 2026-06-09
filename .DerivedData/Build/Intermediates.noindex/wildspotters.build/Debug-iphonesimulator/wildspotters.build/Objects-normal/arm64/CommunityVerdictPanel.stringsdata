@@ -1,0 +1,48 @@
+{
+  "source": "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Views/CommunityVerdictPanel.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "identification.communityVerdict",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 24
+        }
+      },
+      {
+        "comment": "",
+        "key": "identification.totalIdentifications %lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 40
+        }
+      },
+      {
+        "comment": "",
+        "key": "identification.yourChoice",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 74
+        }
+      },
+      {
+        "comment": "",
+        "key": "identification.nextVideo",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 186
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 200
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,219 @@
+{
+  "" : {
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/wildspotters-primary.dia",
+    "emit-module-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/wildspotters-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/wildspotters-primary-emit-module.dia",
+    "pch" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/wildspotters-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/wildspotters-primary.swiftdeps"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/DerivedSources/GeneratedStringSymbols_Localizable.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedStringSymbols_Localizable.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedStringSymbols_Localizable.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedStringSymbols_Localizable.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedStringSymbols_Localizable.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedStringSymbols_Localizable.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedStringSymbols_Localizable.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedStringSymbols_Localizable.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/GeneratedStringSymbols_Localizable~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Models/APIError.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIError.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIError.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIError.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIError.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIError.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIError.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIError.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIError~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Models/Identification.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Identification.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Identification.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Identification.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Identification.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Identification.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Identification.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Identification.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Identification~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Models/IdentificationResponse.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationResponse.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationResponse.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationResponse.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationResponse.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationResponse.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationResponse.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationResponse.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationResponse~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Models/Spot.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Spot.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Spot.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Spot.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Spot.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Spot.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Spot.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Spot.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/Spot~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Models/User.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/User.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/User.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/User.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/User.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/User.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/User.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/User.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/User~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Services/APIClient.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIClient.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIClient.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIClient.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIClient.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIClient.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIClient.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIClient.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/APIClient~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Services/AuthManager.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/AuthManager.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/AuthManager.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/AuthManager.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/AuthManager.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/AuthManager.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/AuthManager.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/AuthManager.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/AuthManager~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Services/CatalogStore.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CatalogStore.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CatalogStore.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CatalogStore.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CatalogStore.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CatalogStore.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CatalogStore.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CatalogStore.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CatalogStore~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Services/KeychainService.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/KeychainService.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/KeychainService.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/KeychainService.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/KeychainService.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/KeychainService.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/KeychainService.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/KeychainService.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/KeychainService~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/ViewModels/IdentificationViewModel.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationViewModel.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationViewModel.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationViewModel.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationViewModel.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationViewModel.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationViewModel.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationViewModel.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationViewModel~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Views/CommunityVerdictPanel.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CommunityVerdictPanel.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CommunityVerdictPanel.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CommunityVerdictPanel.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CommunityVerdictPanel.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CommunityVerdictPanel.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CommunityVerdictPanel.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CommunityVerdictPanel.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/CommunityVerdictPanel~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Views/ForgotPasswordView.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ForgotPasswordView.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ForgotPasswordView.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ForgotPasswordView.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ForgotPasswordView.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ForgotPasswordView.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ForgotPasswordView.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ForgotPasswordView.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ForgotPasswordView~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Views/IdentificationView.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationView.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationView.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationView.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationView.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationView.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationView.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationView.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/IdentificationView~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Views/LoginView.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/LoginView.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/LoginView.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/LoginView.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/LoginView.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/LoginView.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/LoginView.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/LoginView.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/LoginView~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Views/RegisterView.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/RegisterView.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/RegisterView.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/RegisterView.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/RegisterView.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/RegisterView.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/RegisterView.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/RegisterView.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/RegisterView~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Views/ResetPasswordView.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ResetPasswordView.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ResetPasswordView.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ResetPasswordView.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ResetPasswordView.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ResetPasswordView.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ResetPasswordView.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ResetPasswordView.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/ResetPasswordView~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Views/SpeciesSelectionView.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/SpeciesSelectionView.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/SpeciesSelectionView.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/SpeciesSelectionView.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/SpeciesSelectionView.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/SpeciesSelectionView.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/SpeciesSelectionView.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/SpeciesSelectionView.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/SpeciesSelectionView~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/Views/VideoPlayerView.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/VideoPlayerView.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/VideoPlayerView.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/VideoPlayerView.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/VideoPlayerView.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/VideoPlayerView.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/VideoPlayerView.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/VideoPlayerView.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/VideoPlayerView~partial.swiftmodule"
+  },
+  "/Users/johanvanderwijk/Xcode Apps/wildspotters/wildspotters/wildspottersApp.swift" : {
+    "const-values" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/wildspottersApp.swiftconstvalues",
+    "dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/wildspottersApp.d",
+    "diagnostics" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/wildspottersApp.dia",
+    "index-unit-output-path" : "/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/wildspottersApp.o",
+    "llvm-bc" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/wildspottersApp.bc",
+    "object" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/wildspottersApp.o",
+    "swift-dependencies" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/wildspottersApp.swiftdeps",
+    "swiftmodule" : "/Users/johanvanderwijk/Xcode Apps/wildspotters/.DerivedData/Build/Intermediates.noindex/wildspotters.build/Debug-iphonesimulator/wildspotters.build/Objects-normal/arm64/wildspottersApp~partial.swiftmodule"
+  }
+}

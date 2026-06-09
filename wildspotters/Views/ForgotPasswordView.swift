@@ -8,6 +8,7 @@ struct ForgotPasswordView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var requestSuccessful = false
+    @FocusState private var emailIsFocused: Bool
 
     private var canSubmit: Bool {
         !email.trimmingCharacters(in: .whitespaces).isEmpty && !isLoading
@@ -53,6 +54,8 @@ struct ForgotPasswordView: View {
                                 .keyboardType(.emailAddress)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
+                                .focused($emailIsFocused)
+                                .submitLabel(.send)
                                 .padding()
                                 .background(.white)
                                 .clipShape(RoundedRectangle(cornerRadius: 10))

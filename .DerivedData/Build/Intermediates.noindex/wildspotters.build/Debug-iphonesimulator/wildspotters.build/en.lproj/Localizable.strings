@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>accessibility.speciesHint</key>
+	<string>Double-tap to select this species</string>
+	<key>accessibility.videoPlayer</key>
+	<string>Wildlife video clip</string>
+	<key>activation.failed</key>
+	<string>We could not activate your account. The link may have expired. Try logging in or register again.</string>
+	<key>activation.success</key>
+	<string>Your account has been activated. You can now log in.</string>
+	<key>app.name</key>
+	<string>Wildspotters</string>
+	<key>common.logout</key>
+	<string>Logout</string>
+	<key>common.retry</key>
+	<string>Retry</string>
+	<key>error.conflict</key>
+	<string>This spot is no longer available.</string>
+	<key>error.decodingFailed</key>
+	<string>Unexpected response format</string>
+	<key>error.emailAlreadyExists</key>
+	<string>An account with this email address already exists.</string>
+	<key>error.invalidCredentials</key>
+	<string>Invalid email or password.</string>
+	<key>error.invalidResponse</key>
+	<string>Invalid server response</string>
+	<key>error.networkOffline</key>
+	<string>No internet connection. Please check your network and try again.</string>
+	<key>error.notActivated</key>
+	<string>Please activate your account first. Check your email for the activation link.</string>
+	<key>error.rateLimited</key>
+	<string>Too many requests. Please wait a moment.</string>
+	<key>error.serverError</key>
+	<string>Server error (%d)</string>
+	<key>error.unauthorized</key>
+	<string>Session expired. Please log in again.</string>
+	<key>forgotPassword.backToLogin</key>
+	<string>Back to Login</string>
+	<key>forgotPassword.button</key>
+	<string>Send Reset Link</string>
+	<key>forgotPassword.success</key>
+	<string>If an account exists for this email address, you will receive a reset link shortly.</string>
+	<key>identification.communityVerdict</key>
+	<string>Community verdict</string>
+	<key>identification.empty.button</key>
+	<string>Check Again</string>
+	<key>identification.empty.message</key>
+	<string>No new videos to identify right now.</string>
+	<key>identification.empty.title</key>
+	<string>All caught up!</string>
+	<key>identification.loading</key>
+	<string>Loading video...</string>
+	<key>identification.nextVideo</key>
+	<string>Next video</string>
+	<key>identification.question</key>
+	<string>Can you identify this animal?</string>
+	<key>identification.submitting</key>
+	<string>Submitting identification...</string>
+	<key>identification.totalIdentifications %lld</key>
+	<string>%lld identifications</string>
+	<key>identification.yourChoice</key>
+	<string>Your choice</string>
+	<key>login.button</key>
+	<string>Log In</string>
+	<key>login.description</key>
+	<string>Welcome back! Log in with your account to keep spotting.</string>
+	<key>login.forgotPassword</key>
+	<string>Forgot password?</string>
+	<key>login.noAccount</key>
+	<string>Don't have an account? Register</string>
+	<key>login.password</key>
+	<string>Password</string>
+	<key>login.subtitle</key>
+	<string>Can you identify this animal?</string>
+	<key>login.username</key>
+	<string>Email</string>
+	<key>register.alreadyHaveAccount</key>
+	<string>Already have an account? Log in</string>
+	<key>register.button</key>
+	<string>Start Spotting</string>
+	<key>register.description</key>
+	<string>Spot them all! Create a free account to get started. We'll email you an activation link. Open it on any device, then sign in here with your password.</string>
+	<key>register.firstName</key>
+	<string>First name</string>
+	<key>register.goToLogin</key>
+	<string>Go to Login</string>
+	<key>register.lastName</key>
+	<string>Last name</string>
+	<key>register.success</key>
+	<string>We sent an activation email. Open it on any phone or computer, tap the link, then sign in here with your email and password.</string>
+	<key>resetPassword.button</key>
+	<string>Reset Password</string>
+	<key>resetPassword.confirmPassword</key>
+	<string>Confirm new password</string>
+	<key>resetPassword.description</key>
+	<string>Choose a new password for your Wildspotters account.</string>
+	<key>resetPassword.loginMessage</key>
+	<string>Your password has been reset. You can now log in with your new password.</string>
+	<key>resetPassword.newPassword</key>
+	<string>New password</string>
+	<key>resetPassword.passwordMismatch</key>
+	<string>The passwords do not match.</string>
+	<key>resetPassword.success</key>
+	<string>Your password has been reset.</string>
+	<key>resetPassword.title</key>
+	<string>Reset your password</string>
+</dict>
+</plist>

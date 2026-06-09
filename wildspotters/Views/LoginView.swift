@@ -11,6 +11,12 @@ struct LoginView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var showForgotPassword = false
+    @FocusState private var focusedField: Field?
+
+    private enum Field {
+        case username
+        case password
+    }
 
     private var canSubmit: Bool {
         !username.trimmingCharacters(in: .whitespaces).isEmpty
@@ -58,14 +64,19 @@ struct LoginView: View {
                             .keyboardType(.emailAddress)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
+                            .focused($focusedField, equals: .username)
+                            .submitLabel(.next)
                             .padding()
                             .background(Color(.systemBackground))
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                             .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("BrandLightGreen"), lineWidth: 1))
                             .onChange(of: username) { errorMessage = nil }
+                            .onSubmit { focusedField = .password }
 
                         SecureField(String(localized: "login.password"), text: $password)
                             .textContentType(.password)
+                            .focused($focusedField, equals: .password)
+                            .submitLabel(.go)
                             .padding()
                             .background(Color(.systemBackground))
                             .clipShape(RoundedRectangle(cornerRadius: 10))

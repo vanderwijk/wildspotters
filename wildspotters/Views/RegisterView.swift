@@ -13,6 +13,14 @@ struct RegisterView: View {
     @State private var registrationSuccessful = false
     /// Unix time when this screen opened (anti-spam timing check on the server).
     @State private var formStartedAt = Int(Date().timeIntervalSince1970)
+    @FocusState private var focusedField: Field?
+
+    private enum Field {
+        case firstName
+        case lastName
+        case email
+        case password
+    }
 
     private var canSubmit: Bool {
         !firstName.trimmingCharacters(in: .whitespaces).isEmpty
@@ -67,34 +75,45 @@ struct RegisterView: View {
                             TextField(String(localized: "register.firstName"), text: $firstName)
                                 .textContentType(.givenName)
                                 .textInputAutocapitalization(.words)
+                                .focused($focusedField, equals: .firstName)
+                                .submitLabel(.next)
                                 .padding()
                                 .background(Color(.systemBackground))
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("BrandLightGreen"), lineWidth: 1))
                                 .onChange(of: firstName) { errorMessage = nil }
+                                .onSubmit { focusedField = .lastName }
 
                             TextField(String(localized: "register.lastName"), text: $lastName)
                                 .textContentType(.familyName)
                                 .textInputAutocapitalization(.words)
+                                .focused($focusedField, equals: .lastName)
+                                .submitLabel(.next)
                                 .padding()
                                 .background(Color(.systemBackground))
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("BrandLightGreen"), lineWidth: 1))
                                 .onChange(of: lastName) { errorMessage = nil }
+                                .onSubmit { focusedField = .email }
 
                             TextField(String(localized: "login.username"), text: $email)
                                 .textContentType(.emailAddress)
                                 .keyboardType(.emailAddress)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
+                                .focused($focusedField, equals: .email)
+                                .submitLabel(.next)
                                 .padding()
                                 .background(Color(.systemBackground))
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("BrandLightGreen"), lineWidth: 1))
                                 .onChange(of: email) { errorMessage = nil }
+                                .onSubmit { focusedField = .password }
 
                             SecureField(String(localized: "login.password"), text: $password)
                                 .textContentType(.newPassword)
+                                .focused($focusedField, equals: .password)
+                                .submitLabel(.go)
                                 .padding()
                                 .background(Color(.systemBackground))
                                 .clipShape(RoundedRectangle(cornerRadius: 10))

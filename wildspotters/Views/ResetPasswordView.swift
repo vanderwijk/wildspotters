@@ -13,6 +13,12 @@ struct ResetPasswordView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var resetSuccessful = false
+    @FocusState private var focusedField: Field?
+
+    private enum Field {
+        case password
+        case confirmPassword
+    }
 
     private var canSubmit: Bool {
         !password.isEmpty
@@ -65,14 +71,19 @@ struct ResetPasswordView: View {
                         VStack(spacing: 12) {
                             SecureField(String(localized: "resetPassword.newPassword"), text: $password)
                                 .textContentType(.newPassword)
+                                .focused($focusedField, equals: .password)
+                                .submitLabel(.next)
                                 .padding()
                                 .background(Color(.systemBackground))
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("BrandLightGreen"), lineWidth: 1))
                                 .onChange(of: password) { errorMessage = nil }
+                                .onSubmit { focusedField = .confirmPassword }
 
                             SecureField(String(localized: "resetPassword.confirmPassword"), text: $confirmPassword)
                                 .textContentType(.newPassword)
+                                .focused($focusedField, equals: .confirmPassword)
+                                .submitLabel(.go)
                                 .padding()
                                 .background(Color(.systemBackground))
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
