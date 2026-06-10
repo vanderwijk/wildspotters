@@ -169,7 +169,7 @@ struct SpotInfoTray: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Sluit paneel")
+        .accessibilityLabel(String(localized: "accessibility.closePanel"))
         .simultaneousGesture(
             DragGesture(minimumDistance: 1)
                 .onEnded { value in

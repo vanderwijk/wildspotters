@@ -174,6 +174,12 @@ struct RegisterView: View {
 
     private func register() {
         guard canSubmit else { return }
+
+        if let validationError = PasswordValidator.validate(password) {
+            errorMessage = PasswordValidator.localizedMessage(for: validationError)
+            return
+        }
+
         Task {
             errorMessage = nil
             isLoading = true

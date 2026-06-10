@@ -215,11 +215,20 @@ final class APIClient: Sendable {
         return response.spot
     }
 
-    func validateToken(_ token: String) async throws {
-        var request = URLRequest(url: Self.endpoint("spot-videos/next"))
+    /// Confirms that a bearer token is accepted by the API.
+    func validateSession(token: String? = nil) async throws {
+        guard let authToken = token ?? KeychainService.getToken(), !authToken.isEmpty else {
+            throw APIError.unauthorized
+        }
+
+        var request = URLRequest(url: Self.endpoint("profile"))
         request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         _ = try await performStatusOnly(request)
+    }
+
+    func validateToken(_ token: String) async throws {
+        try await validateSession(token: token)
     }
 
     func fetchComments(for spotID: Int) async throws -> SpotCommentsResponse {
@@ -259,6 +268,52 @@ final class APIClient: Sendable {
             authenticated: true
         )
         return response.panel
+    }
+
+    // MARK: - Catalog
+
+    func fetchSpeciesCatalog(ifNoneMatch etag: String?) async throws -> SpeciesCatalogFetchResult {
+        var request = URLRequest(url: Self.endpoint("species-catalog"))
+        request.httpMethod = "GET"
+        try applyAuth(&request)
+        if let etag, !etag.isEmpty {
+            request.setValue(etag, forHTTPHeaderField: "If-None-Match")
+        }
+
+        let data: Data
+        let response: URLResponse
+
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch {
+            throw APIError.networkError(error)
+        }
+
+        guard let http = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+
+        switch http.statusCode {
+        case 304:
+            return SpeciesCatalogFetchResult(status: .unchanged)
+        case 200...299:
+            return SpeciesCatalogFetchResult(
+                status: .updated(
+                    data: data,
+                    etag: http.value(forHTTPHeaderField: "ETag")
+                )
+            )
+        case 401:
+            await MainActor.run { AuthManager.shared.logout() }
+            throw APIError.unauthorized
+        case 403:
+            throw APIError.notActivated
+        case 429:
+            throw APIError.rateLimited
+        default:
+            let message = try? decoder.decode(ServerError.self, from: data).message
+            throw APIError.serverError(statusCode: http.statusCode, message: message)
+        }
     }
 
     // MARK: - Private
@@ -416,6 +471,15 @@ final class APIClient: Sendable {
 }
 
 // MARK: - Internal response types
+
+struct SpeciesCatalogFetchResult: Sendable {
+    enum Status: Sendable {
+        case unchanged
+        case updated(data: Data, etag: String?)
+    }
+
+    let status: Status
+}
 
 private struct ServerError: Decodable {
     let message: String

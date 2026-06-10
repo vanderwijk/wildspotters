@@ -6,9 +6,41 @@ final class AuthManager: ObservableObject {
     static let shared = AuthManager()
 
     @Published private(set) var isAuthenticated = false
+    @Published private(set) var isRestoringSession: Bool
+
+    private var hasCompletedInitialRestore = false
 
     private init() {
-        isAuthenticated = KeychainService.getToken() != nil
+        isRestoringSession = KeychainService.getToken() != nil
+    }
+
+    /// Validates a stored token on cold start before showing the main app.
+    func restoreSession() async {
+        guard !hasCompletedInitialRestore else { return }
+        hasCompletedInitialRestore = true
+
+        guard KeychainService.getToken() != nil else {
+            finishRestoring(authenticated: false)
+            return
+        }
+
+        isRestoringSession = true
+        defer { isRestoringSession = false }
+
+        applySessionCheck(await performSessionCheck())
+    }
+
+    /// Re-validates the active session when the app returns to the foreground.
+    func validateActiveSessionIfNeeded() async {
+        guard isAuthenticated, !isRestoringSession else { return }
+        guard KeychainService.getToken() != nil else {
+            logout()
+            return
+        }
+
+        if await performSessionCheck() == .invalid {
+            logout()
+        }
     }
 
     func login(username: String, password: String) async throws {
@@ -19,7 +51,7 @@ final class AuthManager: ObservableObject {
 
     /// Store a JWT that is already valid (legacy deep links).
     func loginWithToken(_ token: String) async throws {
-        try await APIClient.shared.validateToken(token)
+        try await APIClient.shared.validateSession(token: token)
         try KeychainService.saveToken(token)
         isAuthenticated = true
     }
@@ -44,5 +76,58 @@ final class AuthManager: ObservableObject {
     func logout() {
         KeychainService.deleteToken()
         isAuthenticated = false
+        isRestoringSession = false
+    }
+
+    private enum SessionCheckResult {
+        case valid
+        case invalid
+        case unreachable
+    }
+
+    /// Validates the current keychain token, retrying if the token changes mid-flight.
+    private func performSessionCheck() async -> SessionCheckResult {
+        guard let token = KeychainService.getToken() else { return .invalid }
+        let outcome = await checkSession(token)
+        guard KeychainService.getToken() == token else {
+            return await performSessionCheck()
+        }
+        return outcome
+    }
+
+    private func applySessionCheck(_ outcome: SessionCheckResult) {
+        switch outcome {
+        case .valid, .unreachable:
+            isAuthenticated = true
+        case .invalid:
+            logout()
+        }
+    }
+
+    private func checkSession(_ token: String) async -> SessionCheckResult {
+        if JWTSession.isExpired(token) {
+            return .invalid
+        }
+
+        do {
+            try await APIClient.shared.validateSession(token: token)
+            return .valid
+        } catch let error as APIError {
+            switch error {
+            case .unauthorized, .notActivated:
+                return .invalid
+            case .networkError:
+                return .unreachable
+            default:
+                return .unreachable
+            }
+        } catch {
+            return .unreachable
+        }
+    }
+
+    private func finishRestoring(authenticated: Bool) {
+        isRestoringSession = false
+        isAuthenticated = authenticated
     }
 }

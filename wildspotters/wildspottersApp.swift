@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct WildspottersApp: App {
 
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var authManager = AuthManager.shared
     @State private var showLogin = false
     @State private var activationSuccessMessage: String? = nil
@@ -11,7 +12,9 @@ struct WildspottersApp: App {
     var body: some Scene {
         WindowGroup {
             Group {
-                if authManager.isAuthenticated {
+                if authManager.isRestoringSession {
+                    SessionRestoreView()
+                } else if authManager.isAuthenticated {
                     IdentificationView(authManager: authManager)
                 } else if showLogin {
                     LoginView(
@@ -24,7 +27,17 @@ struct WildspottersApp: App {
                 }
             }
             .animation(.default, value: authManager.isAuthenticated)
+            .animation(.default, value: authManager.isRestoringSession)
             .animation(.default, value: showLogin)
+            .task {
+                await authManager.restoreSession()
+            }
+            .onChange(of: scenePhase) { _, phase in
+                guard phase == .active else { return }
+                Task {
+                    await authManager.validateActiveSessionIfNeeded()
+                }
+            }
             .sheet(item: $passwordResetRequest) { request in
                 ResetPasswordView(
                     token: request.token,
@@ -137,4 +150,25 @@ private struct PasswordResetRequest: Identifiable {
     let id = UUID()
     let token: String
     let login: String?
+}
+
+private struct SessionRestoreView: View {
+    var body: some View {
+        ZStack {
+            Color("BrandBeige")
+                .ignoresSafeArea()
+
+            VStack(spacing: 24) {
+                Image("Logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 240)
+
+                ProgressView(String(localized: "auth.restoringSession"))
+                    .tint(Color("BrandDarkGreen"))
+                    .foregroundStyle(Color("BrandDarkGray"))
+            }
+            .padding(32)
+        }
+    }
 }

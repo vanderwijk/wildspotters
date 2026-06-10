@@ -114,10 +114,10 @@ struct ProfileDrawerView: View {
                 .frame(width: 48, height: 48)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Profiel")
+                Text("profile.title")
                     .font(.headline)
                     .foregroundStyle(Color("BrandDarkGray"))
-                Text(profile?.displayName.isEmpty == false ? profile?.displayName ?? "" : "Wildspotter")
+                Text(profile?.displayName.isEmpty == false ? profile?.displayName ?? "" : String(localized: "profile.defaultDisplayName"))
                     .font(.subheadline)
                     .foregroundStyle(Color("BrandDarkGray").opacity(0.68))
                     .lineLimit(1)
@@ -171,11 +171,11 @@ struct ProfileDrawerView: View {
 
     private var profileSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            sectionTitle("Gegevens", systemImage: "person.crop.circle")
+            sectionTitle(String(localized: "profile.section.details"), systemImage: "person.crop.circle")
 
             VStack(spacing: 10) {
                 drawerTextField(
-                    title: "Voornaam",
+                    title: String(localized: "register.firstName"),
                     text: $firstName,
                     contentType: .givenName,
                     focusedField: .firstName,
@@ -185,7 +185,7 @@ struct ProfileDrawerView: View {
                 }
 
                 drawerTextField(
-                    title: "Achternaam",
+                    title: String(localized: "register.lastName"),
                     text: $lastName,
                     contentType: .familyName,
                     focusedField: .lastName,
@@ -195,7 +195,7 @@ struct ProfileDrawerView: View {
                 }
 
                 drawerTextField(
-                    title: "E-mailadres",
+                    title: String(localized: "profile.email"),
                     text: $email,
                     contentType: .emailAddress,
                     keyboardType: .emailAddress,
@@ -206,7 +206,7 @@ struct ProfileDrawerView: View {
                 }
 
                 if isEmailChange {
-                    SecureField("Huidig wachtwoord", text: $currentPassword)
+                    SecureField(String(localized: "profile.currentPassword"), text: $currentPassword)
                         .textContentType(.password)
                         .focused($focusedField, equals: .currentPassword)
                         .submitLabel(.done)
@@ -216,20 +216,24 @@ struct ProfileDrawerView: View {
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color("BrandLightGreen"), lineWidth: 1))
                         .onChange(of: currentPassword) { feedback = nil }
 
-                    Text("Na opslaan sturen we een bevestigingsmail naar je nieuwe adres. Je huidige e-mailadres blijft actief tot je bevestigt.")
+                    Text("profile.emailChangeNotice")
                         .font(.footnote)
                         .foregroundStyle(Color("BrandDarkGray").opacity(0.68))
                 }
             }
 
             if let pendingEmail = profile?.pendingEmail {
-                Label("Emailwijziging in afwachting: \(pendingEmail)", systemImage: "envelope.badge")
+                Label {
+                    Text("profile.pendingEmailChange \(pendingEmail)")
+                } icon: {
+                    Image(systemName: "envelope.badge")
+                }
                     .font(.footnote)
                     .foregroundStyle(Color("BrandDarkGreen"))
             }
 
             Button(action: saveProfile) {
-                buttonLabel(title: "Profiel opslaan", isLoading: isSaving)
+                buttonLabel(title: String(localized: "profile.saveButton"), isLoading: isSaving)
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
@@ -241,9 +245,9 @@ struct ProfileDrawerView: View {
 
     private var passwordSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionTitle("Wachtwoord", systemImage: "key")
+            sectionTitle(String(localized: "profile.section.password"), systemImage: "key")
 
-            SecureField("Huidig wachtwoord", text: $passwordCurrentPassword)
+            SecureField(String(localized: "profile.currentPassword"), text: $passwordCurrentPassword)
                 .textContentType(.password)
                 .focused($focusedField, equals: .passwordCurrentPassword)
                 .submitLabel(.next)
@@ -254,7 +258,7 @@ struct ProfileDrawerView: View {
                 .onChange(of: passwordCurrentPassword) { feedback = nil }
                 .onSubmit { focusedField = .newPassword }
 
-            SecureField("Nieuw wachtwoord", text: $newPassword)
+            SecureField(String(localized: "resetPassword.newPassword"), text: $newPassword)
                 .textContentType(.newPassword)
                 .focused($focusedField, equals: .newPassword)
                 .submitLabel(.next)
@@ -265,7 +269,7 @@ struct ProfileDrawerView: View {
                 .onChange(of: newPassword) { feedback = nil }
                 .onSubmit { focusedField = .confirmNewPassword }
 
-            SecureField("Herhaal nieuw wachtwoord", text: $confirmNewPassword)
+            SecureField(String(localized: "resetPassword.confirmPassword"), text: $confirmNewPassword)
                 .textContentType(.newPassword)
                 .focused($focusedField, equals: .confirmNewPassword)
                 .submitLabel(.done)
@@ -276,7 +280,7 @@ struct ProfileDrawerView: View {
                 .onChange(of: confirmNewPassword) { feedback = nil }
 
             Button(action: updatePassword) {
-                buttonLabel(title: "Wachtwoord opslaan", isLoading: isUpdatingPassword)
+                buttonLabel(title: String(localized: "profile.savePasswordButton"), isLoading: isUpdatingPassword)
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
@@ -288,14 +292,14 @@ struct ProfileDrawerView: View {
 
     private var deleteSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionTitle("Account", systemImage: "trash")
+            sectionTitle(String(localized: "profile.section.account"), systemImage: "trash")
 
             if showDeleteForm {
-                Text("Dit verwijdert je account direct. Vul je huidige wachtwoord in om te bevestigen.")
+                Text("profile.deleteWarning")
                     .font(.footnote)
                     .foregroundStyle(.red.opacity(0.82))
 
-                SecureField("Huidig wachtwoord", text: $deletePassword)
+                SecureField(String(localized: "profile.currentPassword"), text: $deletePassword)
                     .textContentType(.password)
                     .focused($focusedField, equals: .deletePassword)
                     .submitLabel(.done)
@@ -306,18 +310,20 @@ struct ProfileDrawerView: View {
                     .onChange(of: deletePassword) { feedback = nil }
 
                 Button(role: .destructive, action: deleteAccount) {
-                    buttonLabel(title: "Account definitief verwijderen", isLoading: isDeleting)
+                    buttonLabel(title: String(localized: "profile.deleteConfirmButton"), isLoading: isDeleting)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .disabled(!canDelete)
 
-                Button("Annuleren") {
+                Button {
                     withAnimation {
                         showDeleteForm = false
                         deletePassword = ""
                     }
+                } label: {
+                    Text("profile.cancel")
                 }
                 .font(.footnote)
             } else {
@@ -329,7 +335,7 @@ struct ProfileDrawerView: View {
                         focusedField = .deletePassword
                     }
                 } label: {
-                    Text("Account verwijderen")
+                    Text("profile.deleteButton")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
@@ -451,8 +457,8 @@ struct ProfileDrawerView: View {
                 feedback = Feedback(
                     kind: .success,
                     message: response.emailChangeRequested
-                        ? "Controleer je nieuwe e-mailadres om de wijziging te bevestigen."
-                        : "Je profiel is bijgewerkt."
+                        ? String(localized: "profile.emailChangeConfirm")
+                        : String(localized: "profile.updated")
                 )
             } catch {
                 feedback = Feedback(kind: .error, message: error.localizedDescription)
@@ -463,13 +469,8 @@ struct ProfileDrawerView: View {
     private func updatePassword() {
         guard canUpdatePassword else { return }
 
-        guard newPassword == confirmNewPassword else {
-            feedback = Feedback(kind: .error, message: "De wachtwoorden komen niet overeen.")
-            return
-        }
-
-        guard newPassword.count >= 8 else {
-            feedback = Feedback(kind: .error, message: "Je nieuwe wachtwoord moet minimaal 8 tekens zijn.")
+        if let validationError = PasswordValidator.validate(newPassword, confirmation: confirmNewPassword) {
+            feedback = Feedback(kind: .error, message: PasswordValidator.localizedMessage(for: validationError))
             return
         }
 
@@ -487,7 +488,7 @@ struct ProfileDrawerView: View {
                 newPassword = ""
                 confirmNewPassword = ""
                 focusedField = nil
-                feedback = Feedback(kind: .success, message: "Je wachtwoord is bijgewerkt.")
+                feedback = Feedback(kind: .success, message: String(localized: "profile.passwordUpdated"))
             } catch {
                 feedback = Feedback(kind: .error, message: error.localizedDescription)
             }

@@ -109,6 +109,7 @@ struct IdentificationView: View {
                                 .frame(width: 24, height: 24)
                         }
                         .buttonStyle(.borderless)
+                        .accessibilityLabel(String(localized: "common.logout"))
                         .disabled(isProfileDrawerPresented)
                         .accessibilityHidden(isProfileDrawerPresented)
                     }
@@ -127,7 +128,11 @@ struct IdentificationView: View {
                         }
                         .buttonStyle(.plain)
                         .foregroundStyle(Color("BrandDarkGray"))
-                        .accessibilityLabel(isProfileDrawerPresented ? "Sluit menu" : "Open menu")
+                        .accessibilityLabel(
+                            isProfileDrawerPresented
+                                ? String(localized: "accessibility.closeMenu")
+                                : String(localized: "accessibility.openMenu")
+                        )
                     }
                 }
                 .safeAreaInset(edge: .bottom, spacing: 0) {

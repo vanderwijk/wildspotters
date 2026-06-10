@@ -36,13 +36,13 @@ final class CatalogStore: ObservableObject {
     private let imagesCacheDirectory: URL
     private let imageManifestURL: URL
     private let imagePrefetchConcurrencyLimit = 4
-    private let session: URLSession
+    private let imageSession: URLSession
     private let logger = Logger(subsystem: "nl.wildspotters.app", category: "CatalogStore")
 
     private init() {
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 30
-        session = URLSession(configuration: configuration)
+        imageSession = URLSession(configuration: configuration)
 
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first ?? FileManager.default.temporaryDirectory
         if FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first == nil {
@@ -66,46 +66,48 @@ final class CatalogStore: ObservableObject {
     }
 
     func refresh() async {
-        let url = APIClient.endpoint("species-catalog")
-        var request = URLRequest(url: url)
-        if let token = KeychainService.getToken() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        do {
+            let result = try await APIClient.shared.fetchSpeciesCatalog(ifNoneMatch: etag)
+            switch result.status {
+            case .unchanged:
+                return
+            case .updated(let data, let newEtag):
+                try await applyCatalogUpdate(data: data, etag: newEtag)
+            }
+        } catch let error as APIError {
+            switch error {
+            case .unauthorized, .notActivated:
+                return
+            case .networkError:
+                return
+            default:
+                logger.error("Species catalog refresh failed: \(error.localizedDescription, privacy: .public)")
+            }
+        } catch {
+            logger.error("Species catalog refresh failed: \(error.localizedDescription, privacy: .public)")
         }
-        if let etag {
-            request.setValue(etag, forHTTPHeaderField: "If-None-Match")
-        }
+    }
+
+    private func applyCatalogUpdate(data: Data, etag newEtag: String?) async throws {
+        let catalog = try JSONDecoder().decode(CatalogResponse.self, from: data)
+        species = Dictionary(uniqueKeysWithValues: catalog.species.map { ($0.id, $0) })
 
         do {
-            let (data, response) = try await session.data(for: request)
-            guard let http = response as? HTTPURLResponse else { return }
-
-            if http.statusCode == 304 { return }
-            guard http.statusCode == 200 else { return }
-
-            let catalog = try JSONDecoder().decode(CatalogResponse.self, from: data)
-            species = Dictionary(uniqueKeysWithValues: catalog.species.map { ($0.id, $0) })
-
-            // Persist catalog
-            do {
-                try data.write(to: cacheURL, options: .atomic)
-            } catch {
-                logger.error("Failed to persist species catalog cache: \(error.localizedDescription, privacy: .public)")
-            }
-            let newEtag = http.value(forHTTPHeaderField: "ETag")
-            etag = newEtag
-            if let newEtag {
-                do {
-                    try newEtag.write(to: etagURL, atomically: true, encoding: .utf8)
-                } catch {
-                    logger.error("Failed to persist species catalog ETag: \(error.localizedDescription, privacy: .public)")
-                }
-            }
-
-            // Pre-fetch images that aren't cached yet
-            await prefetchImages(for: catalog.species)
+            try data.write(to: cacheURL, options: .atomic)
         } catch {
-            // Network failure — keep existing cached data
+            logger.error("Failed to persist species catalog cache: \(error.localizedDescription, privacy: .public)")
         }
+
+        etag = newEtag
+        if let newEtag {
+            do {
+                try newEtag.write(to: etagURL, atomically: true, encoding: .utf8)
+            } catch {
+                logger.error("Failed to persist species catalog ETag: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+
+        await prefetchImages(for: catalog.species)
     }
 
     private func prefetchImages(for speciesList: [CatalogSpecies]) async {
@@ -135,7 +137,7 @@ final class CatalogStore: ObservableObject {
 
             for _ in 0..<min(imagePrefetchConcurrencyLimit, pendingDownloads.count) {
                 guard let download = downloadIterator.next() else { break }
-                group.addTask { await downloadImage(download, session: self.session) }
+                group.addTask { await downloadImage(download, session: self.imageSession) }
             }
 
             for await result in group {
@@ -143,7 +145,7 @@ final class CatalogStore: ObservableObject {
                 manifest[String(speciesID)] = urlString
 
                 if let nextDownload = downloadIterator.next() {
-                    group.addTask { await downloadImage(nextDownload, session: self.session) }
+                    group.addTask { await downloadImage(nextDownload, session: self.imageSession) }
                 }
             }
         }

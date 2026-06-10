@@ -147,8 +147,8 @@ struct ResetPasswordView: View {
     private func submit() {
         guard canSubmit else { return }
 
-        guard password == confirmPassword else {
-            errorMessage = String(localized: "resetPassword.passwordMismatch")
+        if let validationError = PasswordValidator.validate(password, confirmation: confirmPassword) {
+            errorMessage = PasswordValidator.localizedMessage(for: validationError)
             return
         }
 
