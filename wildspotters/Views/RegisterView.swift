@@ -31,11 +31,10 @@ struct RegisterView: View {
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            ScrollView {
-                VStack(spacing: 32) {
+        ScrollView {
+            VStack(spacing: 32) {
                     Spacer()
-                        .frame(height: geometry.size.height * 0.04)
+                        .frame(height: 24)
 
                     // Header
                     VStack(spacing: 12) {
@@ -155,10 +154,8 @@ struct RegisterView: View {
                     }
                 }
                 .padding(32)
-                .frame(minHeight: geometry.size.height)
             }
-            .scrollDismissesKeyboard(.interactively)
-        }
+        .scrollDismissesKeyboard(.interactively)
         .background(
             ZStack {
                 Color("BrandBeige")
