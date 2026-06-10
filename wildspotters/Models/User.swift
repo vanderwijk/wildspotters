@@ -18,6 +18,7 @@ struct ProfileUser: Codable, Sendable, Equatable {
     let email: String
     let pendingEmail: String?
     let emailChangePending: Bool
+    let avatar: ProfileAvatar?
 
     enum CodingKeys: String, CodingKey {
         case id, email
@@ -26,6 +27,18 @@ struct ProfileUser: Codable, Sendable, Equatable {
         case displayName = "display_name"
         case pendingEmail = "pending_email"
         case emailChangePending = "email_change_pending"
+        case avatar
+    }
+}
+
+struct ProfileAvatar: Codable, Sendable, Equatable {
+    let url: URL
+    let alt: String
+    let speciesID: Int
+
+    enum CodingKeys: String, CodingKey {
+        case url, alt
+        case speciesID = "species_id"
     }
 }
 

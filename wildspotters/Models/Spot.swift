@@ -37,12 +37,18 @@ struct Spot: Decodable, Identifiable {
     let videoURL: URL
     let location: SpotLocation?
     let speciesOptions: [Species]
+    let commentCount: Int
+    let favoriteCount: Int
+    let isFavorited: Bool
 
     enum CodingKeys: String, CodingKey {
         case id
         case videoURL = "video_url"
         case location
         case speciesOptions = "species_options"
+        case commentCount = "comment_count"
+        case favoriteCount = "favorite_count"
+        case isFavorited = "is_favorited"
     }
 
     init(from decoder: Decoder) throws {
@@ -59,6 +65,9 @@ struct Spot: Decodable, Identifiable {
         videoURL = url
         location = try container.decodeIfPresent(SpotLocation.self, forKey: .location)
         speciesOptions = try container.decode([Species].self, forKey: .speciesOptions)
+        commentCount = try container.decodeIfPresent(Int.self, forKey: .commentCount) ?? 0
+        favoriteCount = try container.decodeIfPresent(Int.self, forKey: .favoriteCount) ?? 0
+        isFavorited = try container.decodeIfPresent(Bool.self, forKey: .isFavorited) ?? false
     }
 }
 
@@ -66,6 +75,29 @@ struct SpotLocation: Decodable {
     let id: Int
     let name: String
     let slug: String
+    let description: String?
+    let marker: SpotLocationMarker?
+    let commonSpecies: [Species]
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, slug, description, marker
+        case commonSpecies = "common_species"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        slug = try container.decode(String.self, forKey: .slug)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        marker = try container.decodeIfPresent(SpotLocationMarker.self, forKey: .marker)
+        commonSpecies = try container.decodeIfPresent([Species].self, forKey: .commonSpecies) ?? []
+    }
+}
+
+struct SpotLocationMarker: Decodable {
+    let latitude: Double
+    let longitude: Double
 }
 
 struct Species: Decodable, Identifiable, Hashable, LocalizedSpeciesNameProviding {
@@ -73,13 +105,70 @@ struct Species: Decodable, Identifiable, Hashable, LocalizedSpeciesNameProviding
     let name: String
     let scientificName: String?
     let englishName: String?
+    let imageURL: URL?
 
     enum CodingKeys: String, CodingKey {
         case id
         case name
         case scientificName = "scientific_name"
         case englishName = "english_name"
+        case imageURL = "image_url"
     }
 
     var displayName: String { localizedDisplayName }
+}
+
+struct SpotCommentsResponse: Decodable {
+    let comments: [SpotComment]
+    let commentCount: Int
+    let commentsOpen: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case comments
+        case commentCount = "comment_count"
+        case commentsOpen = "comments_open"
+    }
+}
+
+struct SpotCommentResponse: Decodable {
+    let success: Bool
+    let comment: SpotComment
+    let commentCount: Int
+    let commentsOpen: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case success, comment
+        case commentCount = "comment_count"
+        case commentsOpen = "comments_open"
+    }
+}
+
+struct SpotFavoriteResponse: Decodable {
+    let success: Bool
+    let isFavorited: Bool
+    let favoriteCount: Int
+
+    enum CodingKeys: String, CodingKey {
+        case success
+        case isFavorited = "is_favorited"
+        case favoriteCount = "favorite_count"
+    }
+}
+
+struct SpotComment: Decodable, Identifiable, Equatable {
+    let id: Int
+    let authorName: String
+    let content: String
+    let dateGMT: String
+    let status: String
+
+    enum CodingKeys: String, CodingKey {
+        case id, content, status
+        case authorName = "author_name"
+        case dateGMT = "date_gmt"
+    }
+
+    var isPending: Bool {
+        status == "pending" || status == "hold"
+    }
 }

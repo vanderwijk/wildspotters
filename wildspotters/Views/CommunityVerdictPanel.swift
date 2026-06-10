@@ -7,6 +7,7 @@ struct CommunityVerdictPanel: View {
     let countdownRemaining: Int
     let countdownDuration: Int
     let onAdvance: () -> Void
+    let onClose: () -> Void
 
     private var panel: IdentificationPanel? {
         if case .showing(let p) = panelState { return p }
@@ -19,29 +20,39 @@ struct CommunityVerdictPanel: View {
     }
 
     var body: some View {
+        VStack(spacing: 0) {
+            closeHandle
+
+            content
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color("BrandDarkGreen").opacity(0.95))
+        )
+        .padding(.horizontal, 16)
+    }
+
+    private var content: some View {
         VStack(spacing: 16) {
-            // Header
             Text("identification.communityVerdict")
                 .font(.headline)
                 .foregroundStyle(.white)
 
-            // Selected species row — available immediately
             selectedSpeciesRow
 
             if let panel {
-                // Community stats bars
                 VStack(spacing: 8) {
                     ForEach(panel.communityTopSpecies) { stat in
                         speciesStatRow(stat)
                     }
                 }
 
-                // Total identifications
                 Text("identification.totalIdentifications \(panel.communityTotalIdentifications)")
                     .font(.caption)
                     .foregroundStyle(Color("BrandLightGreen").opacity(0.7))
 
-                // Next video button with countdown
                 CountdownButton(
                     remaining: countdownRemaining,
                     duration: countdownDuration,
@@ -54,12 +65,30 @@ struct CommunityVerdictPanel: View {
                     .padding(.vertical, 8)
             }
         }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color("BrandDarkGreen").opacity(0.95))
+    }
+
+    private var closeHandle: some View {
+        Button {
+            onClose()
+        } label: {
+            Capsule()
+                .fill(.white.opacity(0.32))
+                .frame(width: 42, height: 5)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Sluit paneel")
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 1)
+                .onEnded { value in
+                    if value.translation.height > 12 {
+                        onClose()
+                    }
+                }
         )
-        .padding(.horizontal, 16)
     }
 
     // MARK: - Selected Species

@@ -110,14 +110,8 @@ struct ProfileDrawerView: View {
 
     private var header: some View {
         HStack(alignment: .center, spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(Color("BrandGreen").opacity(0.16))
-                Text(profileInitial)
-                    .font(.title2.bold())
-                    .foregroundStyle(Color("BrandDarkGreen"))
-            }
-            .frame(width: 48, height: 48)
+            profileAvatar
+                .frame(width: 48, height: 48)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Profiel")
@@ -136,10 +130,43 @@ struct ProfileDrawerView: View {
         .padding(.bottom, 16)
     }
 
-    private var profileInitial: String {
-        let source = [trimmedFirstName, trimmedLastName, profile?.displayName ?? ""]
-            .first { !$0.isEmpty } ?? "W"
-        return String(source.prefix(1)).uppercased()
+    @ViewBuilder
+    private var profileAvatar: some View {
+        if let avatar = profile?.avatar {
+            AsyncImage(url: avatar.url) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                case .failure:
+                    profileInitialAvatar
+                case .empty:
+                    ProgressView()
+                        .tint(Color("BrandGreen"))
+                @unknown default:
+                    profileInitialAvatar
+                }
+            }
+            .clipShape(Circle())
+            .overlay(
+                Circle()
+                    .stroke(Color("BrandLightGreen").opacity(0.55), lineWidth: 2)
+            )
+            .accessibilityLabel(avatar.alt)
+        } else {
+            profileInitialAvatar
+        }
+    }
+
+    private var profileInitialAvatar: some View {
+        ZStack {
+            Circle()
+                .fill(Color("BrandGreen").opacity(0.16))
+            Image(systemName: "person.crop.circle.fill")
+                .font(.system(size: 36, weight: .regular))
+                .foregroundStyle(Color("BrandDarkGreen"))
+        }
     }
 
     private var profileSection: some View {

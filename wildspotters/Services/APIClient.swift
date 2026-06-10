@@ -222,6 +222,34 @@ final class APIClient: Sendable {
         _ = try await performStatusOnly(request)
     }
 
+    func fetchComments(for spotID: Int) async throws -> SpotCommentsResponse {
+        try await get("spots/\(spotID)/comments", authenticated: true)
+    }
+
+    func submitComment(_ content: String, for spotID: Int) async throws -> SpotCommentResponse {
+        struct CommentRequest: Encodable {
+            let content: String
+        }
+
+        return try await post(
+            "spots/\(spotID)/comments",
+            body: CommentRequest(content: content),
+            authenticated: true
+        )
+    }
+
+    func setFavorite(_ favorite: Bool, for spotID: Int) async throws -> SpotFavoriteResponse {
+        struct FavoriteRequest: Encodable {
+            let favorite: Bool
+        }
+
+        return try await post(
+            "spots/\(spotID)/favorite",
+            body: FavoriteRequest(favorite: favorite),
+            authenticated: true
+        )
+    }
+
     // MARK: - Identifications
 
     func submitIdentification(_ identification: Identification) async throws -> IdentificationPanel? {

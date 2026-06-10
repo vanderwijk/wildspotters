@@ -13,6 +13,7 @@ struct IdentificationView: View {
     @State private var isProfileDrawerPresented = false
 
     private let swipeCommitThreshold: CGFloat = 72
+    private let collapsedFooterReserveHeight: CGFloat = 102
 
     var body: some View {
         GeometryReader { geometry in
@@ -43,11 +44,21 @@ struct IdentificationView: View {
                     .allowsHitTesting(!isProfileDrawerPresented)
                     .accessibilityHidden(isProfileDrawerPresented)
 
+                    if !isProfileDrawerPresented {
+                        VStack(spacing: 0) {
+                            Spacer()
+                            footerBar
+                        }
+                        .ignoresSafeArea(edges: .bottom)
+                        .zIndex(8)
+                    }
+
                     if isProfileDrawerPresented {
                         VStack(spacing: 0) {
                             Spacer()
                             footerBar
                         }
+                        .ignoresSafeArea(edges: .bottom)
                         .allowsHitTesting(false)
                         .zIndex(9)
 
@@ -104,6 +115,9 @@ struct IdentificationView: View {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             withAnimation(.spring(response: 0.28, dampingFraction: 0.9)) {
+                                if !isProfileDrawerPresented {
+                                    viewModel.closeSpotInfoPanel()
+                                }
                                 isProfileDrawerPresented.toggle()
                             }
                         } label: {
@@ -118,7 +132,9 @@ struct IdentificationView: View {
                 }
                 .safeAreaInset(edge: .bottom, spacing: 0) {
                     if !isProfileDrawerPresented {
-                        footerBar
+                        Color.clear
+                            .frame(height: collapsedFooterReserveHeight)
+                            .allowsHitTesting(false)
                     }
                 }
                 .task {
@@ -135,18 +151,33 @@ struct IdentificationView: View {
     // MARK: - Footer
 
     private var footerBar: some View {
-        VStack(spacing: 0) {
-            Image("FooterGrass")
-                .resizable()
-                .scaledToFill()
-                .frame(height: 50)
-                .clipped()
-                .allowsHitTesting(false)
-
-            Color("BrandDarkGreen")
-                .frame(height: 30)
-                .background(Color("BrandDarkGreen").ignoresSafeArea(edges: .bottom))
-        }
+        SpotInfoTray(
+            spot: viewModel.currentSpot,
+            activePanel: viewModel.activeSpotInfoPanel,
+            commentCount: viewModel.commentCount,
+            favoriteCount: viewModel.favoriteCount,
+            isFavorited: viewModel.isFavorited,
+            comments: viewModel.spotComments,
+            commentsOpen: viewModel.commentsOpen,
+            isLoadingComments: viewModel.isLoadingComments,
+            isSubmittingComment: viewModel.isSubmittingComment,
+            isUpdatingFavorite: viewModel.isUpdatingFavorite,
+            message: viewModel.spotInfoMessage,
+            error: viewModel.spotInfoError,
+            commentDraft: $viewModel.commentDraft,
+            onSelectPanel: { panel in
+                Task { await viewModel.toggleSpotInfoPanel(panel) }
+            },
+            onClosePanel: {
+                viewModel.closeSpotInfoPanel()
+            },
+            onRefreshComments: {
+                await viewModel.refreshComments()
+            },
+            onSubmitComment: {
+                Task { await viewModel.submitComment() }
+            }
+        )
     }
 
     // MARK: - Pager
@@ -171,7 +202,7 @@ struct IdentificationView: View {
             }
 
             // Community verdict panel overlay
-            if viewModel.isPanelVisible {
+            if viewModel.shouldShowCommunityVerdictPanel {
                 CommunityVerdictPanel(
                     panelState: viewModel.panelState,
                     catalogStore: viewModel.catalogStore,
@@ -179,13 +210,16 @@ struct IdentificationView: View {
                     countdownDuration: viewModel.countdownDuration,
                     onAdvance: {
                         Task { await viewModel.advanceToNextSpot() }
+                    },
+                    onClose: {
+                        viewModel.hideCommunityVerdictPanel()
                     }
                 )
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .padding(.bottom, 8)
             }
         }
-        .animation(.easeInOut(duration: 0.3), value: viewModel.isPanelVisible)
+        .animation(.easeInOut(duration: 0.3), value: viewModel.shouldShowCommunityVerdictPanel)
     }
 
     // MARK: - Subviews
@@ -280,7 +314,7 @@ struct IdentificationView: View {
         committedSwipeOffset = -containerWidth
 
         Task {
-            await viewModel.skipCurrentSpot()
+            await viewModel.advanceOrSkipCurrentSpotFromSwipe()
             // Guaranteed reset regardless of how SwiftUI batches @Published changes.
             // Only clear if no newer swipe has overwritten the committed ID.
             if committedSwipeSpotID == spotID {
@@ -316,7 +350,8 @@ struct IdentificationView: View {
         return isLeftSwipe
             && isClearlyHorizontal
             && hasEnoughHorizontalTravel
-            && !viewModel.isPanelVisible
+            && !viewModel.isSubmittingIdentification
+            && !viewModel.isSpotInfoPanelVisible
             && !viewModel.isAdvancing
     }
 
@@ -334,7 +369,7 @@ struct IdentificationView: View {
     }
 
     private var isSpeciesSelectionEnabled: Bool {
-        !(viewModel.isPanelVisible || viewModel.isAdvancing || suppressSpeciesTap || isSwipeTransitionActive)
+        !(viewModel.isPanelVisible || viewModel.isSpotInfoPanelVisible || viewModel.isAdvancing || suppressSpeciesTap || isSwipeTransitionActive)
     }
 
     private func backgroundView(height: CGFloat) -> some View {

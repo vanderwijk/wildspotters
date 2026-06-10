@@ -30,6 +30,12 @@ final class IdentificationViewModel: ObservableObject {
         case failed
     }
 
+    enum SpotInfoPanel: Equatable {
+        case comments
+        case location
+        case likes
+    }
+
     @Published private(set) var currentSpot: Spot?
     @Published private(set) var upcomingSpot: Spot?
     @Published private(set) var isLoading = false
@@ -38,6 +44,19 @@ final class IdentificationViewModel: ObservableObject {
     @Published private(set) var panelState: PanelState = .hidden
     @Published private(set) var countdownRemaining: Int = 0
     @Published private(set) var isAdvancing = false
+    @Published var activeSpotInfoPanel: SpotInfoPanel?
+    @Published var commentDraft = ""
+    @Published private(set) var spotComments: [SpotComment] = []
+    @Published private(set) var commentCount = 0
+    @Published private(set) var commentsOpen = true
+    @Published private(set) var isLoadingComments = false
+    @Published private(set) var isSubmittingComment = false
+    @Published private(set) var isUpdatingFavorite = false
+    @Published private(set) var favoriteCount = 0
+    @Published private(set) var isFavorited = false
+    @Published private(set) var spotInfoMessage: String?
+    @Published private(set) var spotInfoError: String?
+    @Published private(set) var isCommunityVerdictPanelHidden = false
 
     let catalogStore = CatalogStore.shared
     private let apiClient = APIClient.shared
@@ -59,6 +78,24 @@ final class IdentificationViewModel: ObservableObject {
         default:
             return false
         }
+    }
+
+    var isSubmittingIdentification: Bool {
+        if case .submitting = panelState { return true }
+        return false
+    }
+
+    var hasAnsweredCurrentSpot: Bool {
+        if case .showing = panelState { return true }
+        return false
+    }
+
+    var shouldShowCommunityVerdictPanel: Bool {
+        isPanelVisible && !isSpotInfoPanelVisible && !isCommunityVerdictPanelHidden
+    }
+
+    var isSpotInfoPanelVisible: Bool {
+        activeSpotInfoPanel != nil
     }
 
     func selectableSpecies(for spot: Spot) -> [Species] {
@@ -156,6 +193,8 @@ final class IdentificationViewModel: ObservableObject {
     private func showSpot(_ spot: Spot) {
         currentSpot = spot
         appendRecentSpotID(spot.id)
+        resetSpotInfoState(for: spot)
+        isCommunityVerdictPanelHidden = false
         isEmpty = false
         errorMessage = nil
     }
@@ -171,6 +210,8 @@ final class IdentificationViewModel: ObservableObject {
 
     private func showEmptyState() {
         currentSpot = nil
+        resetSpotInfoState(for: nil)
+        isCommunityVerdictPanelHidden = false
         clearPreloadedSpot()
         isEmpty = true
     }
@@ -215,11 +256,21 @@ final class IdentificationViewModel: ObservableObject {
         }
     }
 
+    func advanceOrSkipCurrentSpotFromSwipe() async {
+        if hasAnsweredCurrentSpot {
+            await advanceToNextSpot()
+        } else {
+            await skipCurrentSpot()
+        }
+    }
+
     // MARK: - Identification (species tap)
 
     func submitIdentification(species: Species) async {
         guard let spot = currentSpot, !isAdvancing else { return }
 
+        closeSpotInfoPanel()
+        isCommunityVerdictPanelHidden = false
         panelState = .submitting(species)
         let identification = Identification(spotID: spot.id, speciesID: species.id)
 
@@ -243,7 +294,147 @@ final class IdentificationViewModel: ObservableObject {
         guard !isAdvancing else { return }
         cancelCountdown()
         panelState = .hidden
+        isCommunityVerdictPanelHidden = false
+        closeSpotInfoPanel()
         _ = await moveToNextSpot()
+    }
+
+    func hideCommunityVerdictPanel() {
+        guard isPanelVisible else { return }
+        cancelCountdown()
+        isCommunityVerdictPanelHidden = true
+    }
+
+    // MARK: - Spot info
+
+    func toggleSpotInfoPanel(_ panel: SpotInfoPanel) async {
+        guard currentSpot != nil, !isSubmittingIdentification, !isAdvancing else { return }
+
+        if panel == .likes {
+            closeSpotInfoPanel()
+            await toggleFavorite()
+            return
+        }
+
+        if activeSpotInfoPanel == panel {
+            closeSpotInfoPanel()
+            return
+        }
+
+        if hasAnsweredCurrentSpot {
+            cancelCountdown()
+        }
+
+        activeSpotInfoPanel = panel
+        spotInfoMessage = nil
+        spotInfoError = nil
+
+        if panel == .comments {
+            await loadCommentsIfNeeded()
+        }
+    }
+
+    func closeSpotInfoPanel() {
+        let hadSpotInfoPanel = activeSpotInfoPanel != nil
+        activeSpotInfoPanel = nil
+        spotInfoMessage = nil
+        spotInfoError = nil
+
+        if hadSpotInfoPanel && hasAnsweredCurrentSpot && !isCommunityVerdictPanelHidden {
+            startCountdown()
+        }
+    }
+
+    func refreshComments() async {
+        await loadComments(force: true)
+    }
+
+    func submitComment() async {
+        guard let spot = currentSpot, !isSubmittingComment else { return }
+
+        let content = commentDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !content.isEmpty else { return }
+
+        isSubmittingComment = true
+        spotInfoMessage = nil
+        spotInfoError = nil
+        defer { isSubmittingComment = false }
+
+        do {
+            let response = try await apiClient.submitComment(content, for: spot.id)
+            commentsOpen = response.commentsOpen
+            commentCount = response.commentCount
+            commentDraft = ""
+
+            if response.comment.isPending {
+                spotInfoMessage = String(localized: "spotInfo.comments.pending")
+            } else {
+                spotComments.append(response.comment)
+                spotInfoMessage = String(localized: "spotInfo.comments.posted")
+            }
+
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        } catch {
+            spotInfoError = error.localizedDescription
+        }
+    }
+
+    func toggleFavorite() async {
+        guard let spot = currentSpot, !isUpdatingFavorite else { return }
+
+        let desiredState = !isFavorited
+        isUpdatingFavorite = true
+        spotInfoMessage = nil
+        spotInfoError = nil
+        defer { isUpdatingFavorite = false }
+
+        do {
+            let response = try await apiClient.setFavorite(desiredState, for: spot.id)
+            isFavorited = response.isFavorited
+            favoriteCount = response.favoriteCount
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        } catch {
+            spotInfoError = error.localizedDescription
+        }
+    }
+
+    private func loadCommentsIfNeeded() async {
+        guard spotComments.isEmpty else { return }
+        await loadComments(force: false)
+    }
+
+    private func loadComments(force: Bool) async {
+        guard let spot = currentSpot, !isLoadingComments else { return }
+        guard force || spotComments.isEmpty else { return }
+
+        isLoadingComments = true
+        spotInfoError = nil
+        defer { isLoadingComments = false }
+
+        do {
+            let response = try await apiClient.fetchComments(for: spot.id)
+            guard currentSpot?.id == spot.id else { return }
+            spotComments = response.comments
+            commentCount = response.commentCount
+            commentsOpen = response.commentsOpen
+        } catch {
+            spotInfoError = error.localizedDescription
+        }
+    }
+
+    private func resetSpotInfoState(for spot: Spot?) {
+        activeSpotInfoPanel = nil
+        commentDraft = ""
+        spotComments = []
+        commentCount = spot?.commentCount ?? 0
+        commentsOpen = true
+        isLoadingComments = false
+        isSubmittingComment = false
+        isUpdatingFavorite = false
+        favoriteCount = spot?.favoriteCount ?? 0
+        isFavorited = spot?.isFavorited ?? false
+        spotInfoMessage = nil
+        spotInfoError = nil
     }
 
     // MARK: - Countdown
