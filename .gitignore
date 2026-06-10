@@ -18,3 +18,4 @@ xcuserdata/
 # CocoaPods / Carthage (if ever used)
 Pods/
 Carthage/Build/
+.claude/
