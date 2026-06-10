@@ -32,10 +32,13 @@ struct ProfileUser: Codable, Sendable, Equatable {
 struct ProfileUpdateResponse: Codable, Sendable {
     let success: Bool
     let emailChangeRequested: Bool
+    let passwordChanged: Bool?
+    let token: String?
     let user: ProfileUser
 
     enum CodingKeys: String, CodingKey {
-        case success, user
+        case success, token, user
         case emailChangeRequested = "email_change_requested"
+        case passwordChanged = "password_changed"
     }
 }

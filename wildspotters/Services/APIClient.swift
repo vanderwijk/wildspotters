@@ -85,33 +85,63 @@ final class APIClient: Sendable {
         firstName: String,
         lastName: String,
         email: String,
-        currentPassword: String?
+        currentPassword: String?,
+        newPassword: String? = nil
     ) async throws -> ProfileUpdateResponse {
         struct ProfileUpdateRequest: Encodable {
             let firstName: String
             let lastName: String
             let email: String
             let currentPassword: String?
+            let newPassword: String?
 
             enum CodingKeys: String, CodingKey {
                 case firstName = "first_name"
                 case lastName = "last_name"
                 case email
                 case currentPassword = "current_password"
+                case newPassword = "new_password"
             }
         }
 
-        return try await post(
+        let response: ProfileUpdateResponse = try await post(
             "profile",
             body: ProfileUpdateRequest(
                 firstName: firstName,
                 lastName: lastName,
                 email: email,
-                currentPassword: currentPassword?.isEmpty == true ? nil : currentPassword
+                currentPassword: currentPassword?.isEmpty == true ? nil : currentPassword,
+                newPassword: newPassword?.isEmpty == true ? nil : newPassword
             ),
             authenticated: true,
             logoutOnUnauthorized: false
         )
+        try saveProfileTokenIfNeeded(from: response)
+        return response
+    }
+
+    func updatePassword(currentPassword: String, newPassword: String) async throws -> ProfileUpdateResponse {
+        struct PasswordUpdateRequest: Encodable {
+            let currentPassword: String
+            let newPassword: String
+
+            enum CodingKeys: String, CodingKey {
+                case currentPassword = "current_password"
+                case newPassword = "new_password"
+            }
+        }
+
+        let response: ProfileUpdateResponse = try await post(
+            "profile",
+            body: PasswordUpdateRequest(
+                currentPassword: currentPassword,
+                newPassword: newPassword
+            ),
+            authenticated: true,
+            logoutOnUnauthorized: false
+        )
+        try saveProfileTokenIfNeeded(from: response)
+        return response
     }
 
     func deleteProfile(currentPassword: String) async throws {
@@ -268,6 +298,11 @@ final class APIClient: Sendable {
             throw APIError.unauthorized
         }
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    }
+
+    private func saveProfileTokenIfNeeded(from response: ProfileUpdateResponse) throws {
+        guard response.passwordChanged == true, let token = response.token, !token.isEmpty else { return }
+        try KeychainService.saveToken(token)
     }
 
     private func perform<T: Decodable>(

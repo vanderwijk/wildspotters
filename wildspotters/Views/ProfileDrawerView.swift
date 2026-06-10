@@ -10,11 +10,14 @@ struct ProfileDrawerView: View {
     @State private var lastName = ""
     @State private var email = ""
     @State private var currentPassword = ""
+    @State private var passwordCurrentPassword = ""
+    @State private var newPassword = ""
+    @State private var confirmNewPassword = ""
     @State private var deletePassword = ""
     @State private var showDeleteForm = false
     @State private var isLoading = false
     @State private var isSaving = false
-    @State private var isSendingPasswordReset = false
+    @State private var isUpdatingPassword = false
     @State private var isDeleting = false
     @State private var feedback: Feedback?
     @FocusState private var focusedField: Field?
@@ -24,6 +27,9 @@ struct ProfileDrawerView: View {
         case lastName
         case email
         case currentPassword
+        case passwordCurrentPassword
+        case newPassword
+        case confirmNewPassword
         case deletePassword
     }
 
@@ -63,6 +69,14 @@ struct ProfileDrawerView: View {
         !deletePassword.isEmpty && !isDeleting
     }
 
+    private var canUpdatePassword: Bool {
+        !passwordCurrentPassword.isEmpty
+            && !newPassword.isEmpty
+            && !confirmNewPassword.isEmpty
+            && !isUpdatingPassword
+            && !isLoading
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -75,12 +89,13 @@ struct ProfileDrawerView: View {
                             .padding(.top, 40)
                     } else {
                         profileSection
+                        feedbackView
                         passwordSection
                         deleteSection
                     }
                 }
                 .padding(.horizontal, 18)
-                .padding(.bottom, 28)
+                .padding(.bottom, focusedField == .deletePassword ? 220 : 48)
             }
             .scrollDismissesKeyboard(.interactively)
         }
@@ -186,8 +201,6 @@ struct ProfileDrawerView: View {
                     .foregroundStyle(Color("BrandDarkGreen"))
             }
 
-            feedbackView
-
             Button(action: saveProfile) {
                 buttonLabel(title: "Profiel opslaan", isLoading: isSaving)
                     .frame(maxWidth: .infinity)
@@ -203,17 +216,45 @@ struct ProfileDrawerView: View {
         VStack(alignment: .leading, spacing: 12) {
             sectionTitle("Wachtwoord", systemImage: "key")
 
-            Text("We gebruiken de standaard WordPress resetflow en sturen een link naar je huidige e-mailadres.")
-                .font(.footnote)
-                .foregroundStyle(Color("BrandDarkGray").opacity(0.72))
+            SecureField("Huidig wachtwoord", text: $passwordCurrentPassword)
+                .textContentType(.password)
+                .focused($focusedField, equals: .passwordCurrentPassword)
+                .submitLabel(.next)
+                .padding(12)
+                .background(Color(.systemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color("BrandLightGreen"), lineWidth: 1))
+                .onChange(of: passwordCurrentPassword) { feedback = nil }
+                .onSubmit { focusedField = .newPassword }
 
-            Button(action: sendPasswordReset) {
-                buttonLabel(title: "Resetlink versturen", isLoading: isSendingPasswordReset)
+            SecureField("Nieuw wachtwoord", text: $newPassword)
+                .textContentType(.newPassword)
+                .focused($focusedField, equals: .newPassword)
+                .submitLabel(.next)
+                .padding(12)
+                .background(Color(.systemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color("BrandLightGreen"), lineWidth: 1))
+                .onChange(of: newPassword) { feedback = nil }
+                .onSubmit { focusedField = .confirmNewPassword }
+
+            SecureField("Herhaal nieuw wachtwoord", text: $confirmNewPassword)
+                .textContentType(.newPassword)
+                .focused($focusedField, equals: .confirmNewPassword)
+                .submitLabel(.done)
+                .padding(12)
+                .background(Color(.systemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color("BrandLightGreen"), lineWidth: 1))
+                .onChange(of: confirmNewPassword) { feedback = nil }
+
+            Button(action: updatePassword) {
+                buttonLabel(title: "Wachtwoord opslaan", isLoading: isUpdatingPassword)
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(.borderedProminent)
             .controlSize(.large)
-            .disabled(isSendingPasswordReset || (profile?.email ?? "").isEmpty)
+            .disabled(!canUpdatePassword)
         }
         .drawerSectionStyle()
     }
@@ -256,6 +297,8 @@ struct ProfileDrawerView: View {
                 Button(role: .destructive) {
                     withAnimation {
                         showDeleteForm = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                         focusedField = .deletePassword
                     }
                 } label: {
@@ -350,6 +393,9 @@ struct ProfileDrawerView: View {
             lastName = loadedProfile.lastName
             email = loadedProfile.email
             currentPassword = ""
+            passwordCurrentPassword = ""
+            newPassword = ""
+            confirmNewPassword = ""
             feedback = nil
         } catch {
             feedback = Feedback(kind: .error, message: error.localizedDescription)
@@ -387,16 +433,34 @@ struct ProfileDrawerView: View {
         }
     }
 
-    private func sendPasswordReset() {
-        guard let email = profile?.email, !email.isEmpty else { return }
+    private func updatePassword() {
+        guard canUpdatePassword else { return }
+
+        guard newPassword == confirmNewPassword else {
+            feedback = Feedback(kind: .error, message: "De wachtwoorden komen niet overeen.")
+            return
+        }
+
+        guard newPassword.count >= 8 else {
+            feedback = Feedback(kind: .error, message: "Je nieuwe wachtwoord moet minimaal 8 tekens zijn.")
+            return
+        }
 
         Task {
-            isSendingPasswordReset = true
-            defer { isSendingPasswordReset = false }
+            isUpdatingPassword = true
+            defer { isUpdatingPassword = false }
 
             do {
-                try await APIClient.shared.forgotPassword(email: email)
-                feedback = Feedback(kind: .success, message: "We hebben een resetlink naar je e-mailadres gestuurd.")
+                let response = try await APIClient.shared.updatePassword(
+                    currentPassword: passwordCurrentPassword,
+                    newPassword: newPassword
+                )
+                profile = response.user
+                passwordCurrentPassword = ""
+                newPassword = ""
+                confirmNewPassword = ""
+                focusedField = nil
+                feedback = Feedback(kind: .success, message: "Je wachtwoord is bijgewerkt.")
             } catch {
                 feedback = Feedback(kind: .error, message: error.localizedDescription)
             }
