@@ -13,13 +13,19 @@ struct IdentificationView: View {
     @State private var isProfileDrawerPresented = false
 
     private let swipeCommitThreshold: CGFloat = 72
-    private let collapsedFooterReserveHeight: CGFloat = 102
+    // Grass (50) + icon bar (40 + 2×12 padding) + a little breathing room.
+    // The footer now sits above the bottom safe area, so this no longer includes the home-indicator inset.
+    private let collapsedFooterReserveHeight: CGFloat = 126
 
     var body: some View {
         GeometryReader { geometry in
             NavigationStack {
                 ZStack {
                     backgroundView(height: geometry.size.height)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            dismissKeyboard()
+                        }
 
                     Group {
                         if viewModel.isLoading && viewModel.currentSpot == nil {
@@ -43,13 +49,26 @@ struct IdentificationView: View {
                     }
                     .allowsHitTesting(!isProfileDrawerPresented)
                     .accessibilityHidden(isProfileDrawerPresented)
+                    // Dismiss the keyboard on any tap in the content area without
+                    // blocking the species buttons underneath.
+                    .simultaneousGesture(
+                        TapGesture().onEnded {
+                            dismissKeyboard()
+                        }
+                    )
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        if !isProfileDrawerPresented {
+                            Color.clear
+                                .frame(height: collapsedFooterReserveHeight)
+                                .allowsHitTesting(false)
+                        }
+                    }
 
                     if !isProfileDrawerPresented {
                         VStack(spacing: 0) {
                             Spacer()
                             footerBar
                         }
-                        .ignoresSafeArea(edges: .bottom)
                         .zIndex(8)
                     }
 
@@ -58,7 +77,6 @@ struct IdentificationView: View {
                             Spacer()
                             footerBar
                         }
-                        .ignoresSafeArea(edges: .bottom)
                         .allowsHitTesting(false)
                         .zIndex(9)
 
@@ -97,6 +115,10 @@ struct IdentificationView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(height: 44)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                dismissKeyboard()
+                            }
                     }
                     ToolbarItem(placement: .topBarLeading) {
                         Button {
@@ -135,13 +157,6 @@ struct IdentificationView: View {
                         )
                     }
                 }
-                .safeAreaInset(edge: .bottom, spacing: 0) {
-                    if !isProfileDrawerPresented {
-                        Color.clear
-                            .frame(height: collapsedFooterReserveHeight)
-                            .allowsHitTesting(false)
-                    }
-                }
                 .task {
                     await viewModel.loadInitial()
                 }
@@ -151,6 +166,14 @@ struct IdentificationView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Keyboard
+
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+        )
     }
 
     // MARK: - Footer

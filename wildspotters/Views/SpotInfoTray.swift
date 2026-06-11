@@ -16,6 +16,7 @@ struct SpotInfoTray: View {
     let message: String?
     let error: String?
     @Binding var commentDraft: String
+    @FocusState private var isComposerFocused: Bool
     let onSelectPanel: (IdentificationViewModel.SpotInfoPanel) -> Void
     let onClosePanel: () -> Void
     let onRefreshComments: () async -> Void
@@ -38,12 +39,26 @@ struct SpotInfoTray: View {
                 .scaledToFill()
                 .frame(height: 50)
                 .clipped()
-                .allowsHitTesting(false)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    isComposerFocused = false
+                }
+                // Only intercept taps while the keyboard is up; otherwise let them
+                // fall through to the content behind the grass.
+                .allowsHitTesting(isComposerFocused)
 
             iconBar
+                .onTapGesture {
+                    isComposerFocused = false
+                }
         }
         .background(Color.clear)
         .animation(.spring(response: 0.32, dampingFraction: 0.9), value: activePanel)
+        .onChange(of: activePanel) {
+            if activePanel != .comments {
+                isComposerFocused = false
+            }
+        }
     }
 
     private var iconBar: some View {
@@ -73,8 +88,8 @@ struct SpotInfoTray: View {
             )
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 60)
-        .background(Color("BrandDarkGreen"))
+        .padding(.vertical, 12)
+        .background(Color("BrandDarkGreen").ignoresSafeArea(edges: .bottom))
     }
 
     private func trayButton(
@@ -154,6 +169,10 @@ struct SpotInfoTray: View {
                 .stroke(.white.opacity(0.08), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .contentShape(Rectangle())
+        .onTapGesture {
+            isComposerFocused = false
+        }
     }
 
     private var dragHandle: some View {
@@ -216,6 +235,7 @@ struct SpotInfoTray: View {
                 .refreshable {
                     await onRefreshComments()
                 }
+                .scrollDismissesKeyboard(.immediately)
                 .frame(maxHeight: .infinity)
             }
 
@@ -287,6 +307,7 @@ struct SpotInfoTray: View {
                     .scrollContentBackground(.hidden)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 3)
+                    .focused($isComposerFocused)
             }
             .frame(maxWidth: .infinity)
             .frame(height: 74)
