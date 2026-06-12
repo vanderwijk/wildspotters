@@ -83,16 +83,12 @@ struct LeaderboardView: View {
     private func contentView(_ response: LeaderboardResponse) -> some View {
         ScrollView {
             LazyVStack(spacing: 10) {
-                currentUserCard(response.currentUser)
+                headerSection
 
-                headerSection(generatedAt: response.generatedAt)
-
-                let listEntries = response.entries.filter { !$0.isCurrentUser }
-
-                if listEntries.isEmpty {
+                if response.entries.isEmpty {
                     emptyState
                 } else {
-                    ForEach(listEntries) { entry in
+                    ForEach(response.entries) { entry in
                         entryRow(entry)
                     }
                 }
@@ -106,68 +102,12 @@ struct LeaderboardView: View {
         }
     }
 
-    private func currentUserCard(_ user: LeaderboardCurrentUser) -> some View {
-        HStack(spacing: 14) {
-            avatarView(url: user.avatarURL, name: user.name)
-                .frame(width: 56, height: 56)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("leaderboard.yourRank")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(Color("BrandDarkGray").opacity(0.58))
-
-                Text(user.name)
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(Color("BrandDarkGray"))
-                    .lineLimit(2)
-
-                Text(
-                    String(
-                        format: String(localized: "leaderboard.confirmedCount"),
-                        user.confirmed
-                    )
-                )
-                .font(.subheadline)
-                .foregroundStyle(Color("BrandDarkGray").opacity(0.58))
-            }
-
-            Spacer(minLength: 0)
-
-            VStack(alignment: .trailing, spacing: 4) {
-                Text(rankLabel(user.rank))
-                    .font(.headline.weight(.bold))
-                    .foregroundStyle(Color("BrandDarkGreen"))
-                    .monospacedDigit()
-
-                scoreValue(user.formattedScore)
-            }
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color("BrandGreen").opacity(0.14))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color("BrandGreen").opacity(0.35), lineWidth: 1)
-        )
-    }
-
-    private func headerSection(generatedAt: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("leaderboard.subtitle")
-                .font(.subheadline)
-                .foregroundStyle(Color("BrandDarkGray").opacity(0.72))
-
-            if let updatedText = formattedUpdatedAt(generatedAt) {
-                Text(updatedText)
-                    .font(.caption)
-                    .foregroundStyle(Color("BrandDarkGray").opacity(0.52))
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.bottom, 4)
+    private var headerSection: some View {
+        Text("leaderboard.subtitle")
+            .font(.subheadline)
+            .foregroundStyle(Color("BrandDarkGray").opacity(0.72))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.bottom, 4)
     }
 
     private var emptyState: some View {
@@ -215,11 +155,14 @@ struct LeaderboardView: View {
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.white.opacity(0.72))
+                .fill(entry.isCurrentUser ? Color("BrandGreen").opacity(0.14) : Color.white.opacity(0.72))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color("BrandDarkGreen").opacity(0.08), lineWidth: 1)
+                .stroke(
+                    entry.isCurrentUser ? Color("BrandGreen").opacity(0.35) : Color("BrandDarkGreen").opacity(0.08),
+                    lineWidth: 1
+                )
         )
     }
 
@@ -302,13 +245,6 @@ struct LeaderboardView: View {
 
     // MARK: - Helpers
 
-    private func rankLabel(_ rank: Int?) -> String {
-        guard let rank else {
-            return String(localized: "leaderboard.noRank")
-        }
-        return "#\(rank)"
-    }
-
     private func rankBackground(for rank: Int) -> Color {
         switch rank {
         case 1:
@@ -345,21 +281,6 @@ struct LeaderboardView: View {
         return String(parts).uppercased()
     }
 
-    private func formattedUpdatedAt(_ iso: String) -> String? {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        var date = formatter.date(from: iso)
-
-        if date == nil {
-            formatter.formatOptions = [.withInternetDateTime]
-            date = formatter.date(from: iso)
-        }
-
-        guard let date else { return nil }
-
-        let formatted = date.formatted(date: .abbreviated, time: .shortened)
-        return String(format: String(localized: "leaderboard.updated"), formatted)
-    }
 }
 
 struct LeaderboardView_Previews: PreviewProvider {

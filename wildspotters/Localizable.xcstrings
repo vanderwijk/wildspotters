@@ -701,19 +701,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld confirmed (all time)"
+            "value": "%lld confirmed"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld bevestigd (totaal)"
+            "value": "%lld bevestigd"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld bestätigt (gesamt)"
+            "value": "%lld bestätigt"
           }
         }
       }

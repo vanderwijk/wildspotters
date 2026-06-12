@@ -56,12 +56,12 @@ extension LeaderboardEntry {
     }
 
     private static func formatScore(_ score: Double) -> String {
-        String(format: "%.1f", score)
+        String(Int(score.rounded()))
     }
 }
 
 extension LeaderboardCurrentUser {
     var formattedScore: String {
-        String(format: "%.1f", score)
+        String(Int(score.rounded()))
     }
 }
