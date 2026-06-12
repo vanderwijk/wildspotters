@@ -123,17 +123,17 @@ struct IdentificationView: View {
                     }
                     ToolbarItem(placement: .topBarLeading) {
                         Button {
-                            authManager.logout()
+                            viewModel.closeSpotInfoPanel()
+                            isLeaderboardPresented = true
                         } label: {
-                            Image("LogoutIcon")
-                                .renderingMode(.original)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 24, height: 24)
+                            Image(systemName: isLeaderboardPresented ? "trophy.fill" : "trophy")
+                                .font(.title3.weight(.semibold))
+                                .frame(width: 34, height: 34)
                         }
-                        .buttonStyle(.borderless)
-                        .accessibilityLabel(String(localized: "common.logout"))
-                        .disabled(isProfileDrawerPresented || isLeaderboardPresented)
+                        .buttonStyle(.plain)
+                        .foregroundStyle(Color("BrandDarkGray"))
+                        .accessibilityLabel(String(localized: "spotInfo.leaderboard.title"))
+                        .disabled(isProfileDrawerPresented)
                         .accessibilityHidden(isProfileDrawerPresented)
                     }
                     ToolbarItem(placement: .topBarTrailing) {
@@ -208,11 +208,6 @@ struct IdentificationView: View {
             },
             onSubmitComment: {
                 Task { await viewModel.submitComment() }
-            },
-            isLeaderboardActive: isLeaderboardPresented,
-            onShowLeaderboard: {
-                viewModel.closeSpotInfoPanel()
-                isLeaderboardPresented = true
             }
         )
     }

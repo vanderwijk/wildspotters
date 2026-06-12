@@ -2167,6 +2167,29 @@
         }
       }
     },
+    "profile.section.session": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessie"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sitzung"
+          }
+        }
+      }
+    },
     "profile.deleteWarning": {
       "extractionState": "manual",
       "localizations": {

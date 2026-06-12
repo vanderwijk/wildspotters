@@ -91,6 +91,7 @@ struct ProfileDrawerView: View {
                         profileSection
                         feedbackView
                         passwordSection
+                        logoutSection
                         deleteSection
                     }
                 }
@@ -286,6 +287,23 @@ struct ProfileDrawerView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .disabled(!canUpdatePassword)
+        }
+        .drawerSectionStyle()
+    }
+
+    private var logoutSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionTitle(String(localized: "profile.section.session"), systemImage: "rectangle.portrait.and.arrow.right")
+
+            Button(role: .destructive) {
+                onClose()
+                authManager.logout()
+            } label: {
+                Label(String(localized: "common.logout"), systemImage: "rectangle.portrait.and.arrow.right")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
         }
         .drawerSectionStyle()
     }
