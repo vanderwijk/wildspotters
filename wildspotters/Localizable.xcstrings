@@ -701,19 +701,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld confirmed identifications"
+            "value": "%lld confirmed (all time)"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld bevestigde identificaties"
+            "value": "%lld bevestigd (totaal)"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld bestätigte Identifikationen"
+            "value": "%lld bestätigt (gesamt)"
           }
         }
       }
@@ -783,6 +783,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "—"
+          }
+        }
+      }
+    },
+    "leaderboard.scoreLabel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity score"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activiteitsscore"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktivitätspunkte"
           }
         }
       }

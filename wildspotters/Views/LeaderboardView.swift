@@ -139,10 +139,7 @@ struct LeaderboardView: View {
                     .foregroundStyle(Color("BrandDarkGreen"))
                     .monospacedDigit()
 
-                Text(user.formattedScore)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color("BrandGreen"))
-                    .monospacedDigit()
+                scoreValue(user.formattedScore)
             }
         }
         .padding(.horizontal, 14)
@@ -212,10 +209,7 @@ struct LeaderboardView: View {
 
             Spacer(minLength: 0)
 
-            Text(entry.formattedScore)
-                .font(.headline.weight(.bold))
-                .foregroundStyle(Color("BrandDarkGreen"))
-                .monospacedDigit()
+            scoreValue(entry.formattedScore)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
@@ -230,6 +224,19 @@ struct LeaderboardView: View {
     }
 
     // MARK: - Components
+
+    private func scoreValue(_ formattedScore: String) -> some View {
+        VStack(alignment: .trailing, spacing: 2) {
+            Text(formattedScore)
+                .font(.headline.weight(.bold))
+                .foregroundStyle(Color("BrandDarkGreen"))
+                .monospacedDigit()
+
+            Text("leaderboard.scoreLabel")
+                .font(.caption2)
+                .foregroundStyle(Color("BrandDarkGray").opacity(0.52))
+        }
+    }
 
     @ViewBuilder
     private func rankBadge(_ rank: Int) -> some View {
