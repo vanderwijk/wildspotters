@@ -83,6 +83,8 @@ struct LeaderboardView: View {
     private func contentView(_ response: LeaderboardResponse) -> some View {
         ScrollView {
             LazyVStack(spacing: 10) {
+                currentUserCard(response.currentUser)
+
                 headerSection
 
                 if response.entries.isEmpty {
@@ -100,6 +102,54 @@ struct LeaderboardView: View {
         .refreshable {
             await viewModel.load()
         }
+    }
+
+    private func currentUserCard(_ user: LeaderboardCurrentUser) -> some View {
+        HStack(spacing: 14) {
+            avatarView(url: user.avatarURL, name: user.name)
+                .frame(width: 56, height: 56)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("leaderboard.yourRank")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color("BrandDarkGray").opacity(0.58))
+
+                Text(user.name)
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(Color("BrandDarkGray"))
+                    .lineLimit(2)
+
+                Text(
+                    String(
+                        format: String(localized: "leaderboard.confirmedCount"),
+                        user.confirmed
+                    )
+                )
+                .font(.subheadline)
+                .foregroundStyle(Color("BrandDarkGray").opacity(0.58))
+            }
+
+            Spacer(minLength: 0)
+
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(rankLabel(user.rank))
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(Color("BrandDarkGreen"))
+                    .monospacedDigit()
+
+                scoreValue(user.formattedScore)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color("BrandGreen").opacity(0.14))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color("BrandGreen").opacity(0.35), lineWidth: 1)
+        )
     }
 
     private var headerSection: some View {
@@ -244,6 +294,13 @@ struct LeaderboardView: View {
     }
 
     // MARK: - Helpers
+
+    private func rankLabel(_ rank: Int?) -> String {
+        guard let rank else {
+            return String(localized: "leaderboard.noRank")
+        }
+        return "#\(rank)"
+    }
 
     private func rankBackground(for rank: Int) -> Color {
         switch rank {
