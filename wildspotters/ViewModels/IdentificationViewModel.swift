@@ -68,6 +68,8 @@ final class IdentificationViewModel: ObservableObject {
     private static let countdownDuration = 10
     private static let skipTermID = 74
     private static let exclusionHistoryLimit = 12
+    private static let skipSubmissionMaxAttempts = 3
+    private static let skipSubmissionRetryBaseDelay: Double = 2
 
     var countdownDuration: Int { Self.countdownDuration }
 
@@ -473,10 +475,29 @@ final class IdentificationViewModel: ObservableObject {
 
     private func submitSkip(for spot: Spot) async {
         let skip = Identification(spotID: spot.id, speciesID: Self.skipTermID)
-        do {
-            _ = try await apiClient.submitIdentification(skip)
-        } catch {
-            logger.error("Skip submission failed for spot \(spot.id, privacy: .public): \(error.localizedDescription, privacy: .public)")
+
+        for attempt in 1...Self.skipSubmissionMaxAttempts {
+            do {
+                _ = try await apiClient.submitIdentification(skip)
+                if attempt > 1 {
+                    logger.info("Skip submission succeeded for spot \(spot.id, privacy: .public) on attempt \(attempt, privacy: .public)")
+                }
+                return
+            } catch is CancellationError {
+                return
+            } catch {
+                logger.error("Skip submission failed for spot \(spot.id, privacy: .public) (attempt \(attempt, privacy: .public)/\(Self.skipSubmissionMaxAttempts, privacy: .public)): \(error.localizedDescription, privacy: .public)")
+
+                guard attempt < Self.skipSubmissionMaxAttempts else { return }
+
+                // Exponential backoff: 2s, 4s
+                let delay = Self.skipSubmissionRetryBaseDelay * pow(2, Double(attempt - 1))
+                do {
+                    try await Task.sleep(for: .seconds(delay))
+                } catch {
+                    return
+                }
+            }
         }
     }
 
