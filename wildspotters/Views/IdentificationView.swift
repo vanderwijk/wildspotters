@@ -48,8 +48,6 @@ struct IdentificationView: View {
                             errorContent(error)
                         }
                     }
-                    .allowsHitTesting(!isProfileDrawerPresented)
-                    .accessibilityHidden(isProfileDrawerPresented)
                     // Dismiss the keyboard on any tap in the content area without
                     // blocking the species buttons underneath.
                     .simultaneousGesture(
@@ -58,54 +56,16 @@ struct IdentificationView: View {
                         }
                     )
                     .safeAreaInset(edge: .bottom, spacing: 0) {
-                        if !isProfileDrawerPresented {
-                            Color.clear
-                                .frame(height: collapsedFooterReserveHeight)
-                                .allowsHitTesting(false)
-                        }
+                        Color.clear
+                            .frame(height: collapsedFooterReserveHeight)
+                            .allowsHitTesting(false)
                     }
 
-                    if !isProfileDrawerPresented {
-                        VStack(spacing: 0) {
-                            Spacer()
-                            footerBar
-                        }
-                        .zIndex(8)
+                    VStack(spacing: 0) {
+                        Spacer()
+                        footerBar
                     }
-
-                    if isProfileDrawerPresented {
-                        VStack(spacing: 0) {
-                            Spacer()
-                            footerBar
-                        }
-                        .allowsHitTesting(false)
-                        .zIndex(9)
-
-                        Color.black.opacity(0.28)
-                            .ignoresSafeArea()
-                            .onTapGesture {
-                                withAnimation(.spring(response: 0.28, dampingFraction: 0.9)) {
-                                    isProfileDrawerPresented = false
-                                }
-                            }
-                            .transition(.opacity)
-                            .zIndex(10)
-
-                        HStack(spacing: 0) {
-                            Spacer(minLength: 44)
-                            ProfileDrawerView(
-                                authManager: authManager,
-                                onClose: {
-                                    withAnimation(.spring(response: 0.28, dampingFraction: 0.9)) {
-                                        isProfileDrawerPresented = false
-                                    }
-                                }
-                            )
-                        }
-                        .ignoresSafeArea(edges: .bottom)
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
-                        .zIndex(11)
-                    }
+                    .zIndex(8)
                 }
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbarBackground(Color("BrandBeige").opacity(0.9), for: .navigationBar)
@@ -133,33 +93,26 @@ struct IdentificationView: View {
                         .buttonStyle(.plain)
                         .foregroundStyle(Color("BrandDarkGray"))
                         .accessibilityLabel(String(localized: "spotInfo.leaderboard.title"))
-                        .disabled(isProfileDrawerPresented)
-                        .accessibilityHidden(isProfileDrawerPresented)
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
-                            withAnimation(.spring(response: 0.28, dampingFraction: 0.9)) {
-                                if !isProfileDrawerPresented {
-                                    viewModel.closeSpotInfoPanel()
-                                }
-                                isProfileDrawerPresented.toggle()
-                            }
+                            viewModel.closeSpotInfoPanel()
+                            isProfileDrawerPresented = true
                         } label: {
-                            Image(systemName: isProfileDrawerPresented ? "xmark" : "line.3.horizontal")
+                            Image(systemName: "person.crop.circle")
                                 .font(.title3.weight(.semibold))
                                 .frame(width: 34, height: 34)
                         }
                         .buttonStyle(.plain)
                         .foregroundStyle(Color("BrandDarkGray"))
-                        .accessibilityLabel(
-                            isProfileDrawerPresented
-                                ? String(localized: "accessibility.closeMenu")
-                                : String(localized: "accessibility.openMenu")
-                        )
+                        .accessibilityLabel(String(localized: "accessibility.openProfile"))
                     }
                 }
                 .sheet(isPresented: $isLeaderboardPresented) {
                     LeaderboardView()
+                }
+                .sheet(isPresented: $isProfileDrawerPresented) {
+                    ProfileDrawerView(authManager: authManager)
                 }
                 .task {
                     await viewModel.loadInitial()

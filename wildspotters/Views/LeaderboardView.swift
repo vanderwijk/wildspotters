@@ -7,7 +7,7 @@ struct LeaderboardView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .bottom) {
+            ZStack {
                 Color("BrandBeige")
                     .ignoresSafeArea()
 
@@ -81,29 +81,80 @@ struct LeaderboardView: View {
     }
 
     private func contentView(_ response: LeaderboardResponse) -> some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                LazyVStack(spacing: 10) {
-                    headerSection(generatedAt: response.generatedAt)
+        ScrollView {
+            LazyVStack(spacing: 10) {
+                currentUserCard(response.currentUser)
 
-                    if response.entries.isEmpty {
-                        emptyState
-                    } else {
-                        ForEach(response.entries) { entry in
-                            entryRow(entry)
-                        }
+                headerSection(generatedAt: response.generatedAt)
+
+                let listEntries = response.entries.filter { !$0.isCurrentUser }
+
+                if listEntries.isEmpty {
+                    emptyState
+                } else {
+                    ForEach(listEntries) { entry in
+                        entryRow(entry)
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
-                .padding(.bottom, 120)
             }
-            .refreshable {
-                await viewModel.load()
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 48)
+        }
+        .refreshable {
+            await viewModel.load()
+        }
+    }
+
+    private func currentUserCard(_ user: LeaderboardCurrentUser) -> some View {
+        HStack(spacing: 14) {
+            avatarView(url: user.avatarURL, name: user.name)
+                .frame(width: 56, height: 56)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("leaderboard.yourRank")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color("BrandDarkGray").opacity(0.58))
+
+                Text(user.name)
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(Color("BrandDarkGray"))
+                    .lineLimit(2)
+
+                Text(
+                    String(
+                        format: String(localized: "leaderboard.confirmedCount"),
+                        user.confirmed
+                    )
+                )
+                .font(.subheadline)
+                .foregroundStyle(Color("BrandDarkGray").opacity(0.58))
             }
 
-            currentUserBar(response.currentUser)
+            Spacer(minLength: 0)
+
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(rankLabel(user.rank))
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(Color("BrandDarkGreen"))
+                    .monospacedDigit()
+
+                Text(user.formattedScore)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color("BrandGreen"))
+                    .monospacedDigit()
+            }
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color("BrandGreen").opacity(0.14))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color("BrandGreen").opacity(0.35), lineWidth: 1)
+        )
     }
 
     private func headerSection(generatedAt: String) -> some View {
@@ -170,54 +221,12 @@ struct LeaderboardView: View {
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(entry.isCurrentUser ? Color("BrandGreen").opacity(0.14) : Color.white.opacity(0.72))
+                .fill(Color.white.opacity(0.72))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(
-                    entry.isCurrentUser ? Color("BrandGreen").opacity(0.35) : Color("BrandDarkGreen").opacity(0.08),
-                    lineWidth: 1
-                )
+                .stroke(Color("BrandDarkGreen").opacity(0.08), lineWidth: 1)
         )
-    }
-
-    private func currentUserBar(_ user: LeaderboardCurrentUser) -> some View {
-        HStack(spacing: 12) {
-            avatarView(url: user.avatarURL, name: user.name)
-                .frame(width: 48, height: 48)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("leaderboard.yourRank")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(Color("BrandLightGreen").opacity(0.82))
-
-                Text(user.name)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-            }
-
-            Spacer(minLength: 0)
-
-            VStack(alignment: .trailing, spacing: 4) {
-                Text(rankLabel(user.rank))
-                    .font(.headline.weight(.bold))
-                    .foregroundStyle(.white)
-                    .monospacedDigit()
-
-                Text(user.formattedScore)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color("BrandLightGreen"))
-                    .monospacedDigit()
-            }
-        }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 14)
-        .background(Color("BrandDarkGreen"))
-        .overlay(alignment: .top) {
-            Divider()
-                .overlay(Color.white.opacity(0.12))
-        }
     }
 
     // MARK: - Components

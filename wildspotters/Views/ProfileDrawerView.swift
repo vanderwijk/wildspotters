@@ -2,8 +2,8 @@ import SwiftUI
 
 struct ProfileDrawerView: View {
 
+    @Environment(\.dismiss) private var dismiss
     @ObservedObject var authManager: AuthManager
-    let onClose: () -> Void
 
     @State private var profile: ProfileUser?
     @State private var firstName = ""
@@ -78,57 +78,87 @@ struct ProfileDrawerView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
+        NavigationStack {
+            ZStack {
+                Color("BrandBeige")
+                    .ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 18) {
-                    if isLoading && profile == nil {
-                        ProgressView()
-                            .tint(Color("BrandGreen"))
-                            .padding(.top, 40)
-                    } else {
-                        profileSection
-                        feedbackView
-                        passwordSection
-                        logoutSection
-                        deleteSection
+                ScrollView {
+                    VStack(spacing: 14) {
+                        if isLoading && profile == nil {
+                            ProgressView()
+                                .tint(Color("BrandGreen"))
+                                .padding(.top, 40)
+                        } else {
+                            profileHeader
+                            profileSection
+                            feedbackView
+                            passwordSection
+                            logoutSection
+                            deleteSection
+                        }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+                    .padding(.bottom, focusedField == .deletePassword ? 220 : 48)
                 }
-                .padding(.horizontal, 18)
-                .padding(.bottom, focusedField == .deletePassword ? 220 : 48)
+                .scrollDismissesKeyboard(.interactively)
             }
-            .scrollDismissesKeyboard(.interactively)
+            .navigationTitle(String(localized: "profile.title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color("BrandBeige"), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.body.weight(.semibold))
+                            .frame(width: 34, height: 34)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Color("BrandDarkGray"))
+                    .accessibilityLabel(String(localized: "accessibility.closePanel"))
+                }
+            }
         }
-        .frame(maxWidth: 340, maxHeight: .infinity)
-        .background(drawerBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 0))
-        .shadow(color: .black.opacity(0.22), radius: 20, x: -8, y: 0)
         .task {
             await loadProfile()
         }
     }
 
-    private var header: some View {
-        HStack(alignment: .center, spacing: 12) {
+    private var profileHeader: some View {
+        HStack(spacing: 14) {
             profileAvatar
-                .frame(width: 48, height: 48)
+                .frame(width: 56, height: 56)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text("profile.title")
-                    .font(.headline)
-                    .foregroundStyle(Color("BrandDarkGray"))
+            VStack(alignment: .leading, spacing: 4) {
                 Text(profile?.displayName.isEmpty == false ? profile?.displayName ?? "" : String(localized: "profile.defaultDisplayName"))
-                    .font(.subheadline)
-                    .foregroundStyle(Color("BrandDarkGray").opacity(0.68))
-                    .lineLimit(1)
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(Color("BrandDarkGray"))
+                    .lineLimit(2)
+
+                if let email = profile?.email, !email.isEmpty {
+                    Text(email)
+                        .font(.subheadline)
+                        .foregroundStyle(Color("BrandDarkGray").opacity(0.58))
+                        .lineLimit(1)
+                }
             }
 
-            Spacer()
+            Spacer(minLength: 0)
         }
-        .padding(.horizontal, 18)
-        .padding(.top, 18)
-        .padding(.bottom, 16)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.72))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color("BrandDarkGreen").opacity(0.08), lineWidth: 1)
+        )
     }
 
     @ViewBuilder
@@ -165,7 +195,7 @@ struct ProfileDrawerView: View {
             Circle()
                 .fill(Color("BrandGreen").opacity(0.16))
             Image(systemName: "person.crop.circle.fill")
-                .font(.system(size: 36, weight: .regular))
+                .font(.system(size: 40, weight: .regular))
                 .foregroundStyle(Color("BrandDarkGreen"))
         }
     }
@@ -229,8 +259,8 @@ struct ProfileDrawerView: View {
                 } icon: {
                     Image(systemName: "envelope.badge")
                 }
-                    .font(.footnote)
-                    .foregroundStyle(Color("BrandDarkGreen"))
+                .font(.footnote)
+                .foregroundStyle(Color("BrandDarkGreen"))
             }
 
             Button(action: saveProfile) {
@@ -238,10 +268,11 @@ struct ProfileDrawerView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(Color("BrandGreen"))
             .controlSize(.large)
             .disabled(!canSave)
         }
-        .drawerSectionStyle()
+        .panelSectionStyle()
     }
 
     private var passwordSection: some View {
@@ -285,18 +316,19 @@ struct ProfileDrawerView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(Color("BrandGreen"))
             .controlSize(.large)
             .disabled(!canUpdatePassword)
         }
-        .drawerSectionStyle()
+        .panelSectionStyle()
     }
 
     private var logoutSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             sectionTitle(String(localized: "profile.section.session"), systemImage: "rectangle.portrait.and.arrow.right")
 
-            Button(role: .destructive) {
-                onClose()
+            Button {
+                dismiss()
                 authManager.logout()
             } label: {
                 Label(String(localized: "common.logout"), systemImage: "rectangle.portrait.and.arrow.right")
@@ -305,7 +337,7 @@ struct ProfileDrawerView: View {
             .buttonStyle(.bordered)
             .controlSize(.large)
         }
-        .drawerSectionStyle()
+        .panelSectionStyle()
     }
 
     private var deleteSection: some View {
@@ -360,7 +392,7 @@ struct ProfileDrawerView: View {
                 .controlSize(.large)
             }
         }
-        .drawerSectionStyle()
+        .panelSectionStyle()
     }
 
     @ViewBuilder
@@ -373,6 +405,8 @@ struct ProfileDrawerView: View {
             .font(.footnote)
             .foregroundStyle(feedback.kind == .success ? Color("BrandGreen") : .red)
             .transition(.opacity)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 4)
         }
     }
 
@@ -415,21 +449,6 @@ struct ProfileDrawerView: View {
                 Text(title)
             }
         }
-    }
-
-    private var drawerBackground: some View {
-        ZStack {
-            Color("BrandBeige")
-            LinearGradient(
-                colors: [
-                    Color(.systemBackground).opacity(0.92),
-                    Color("BrandBeige").opacity(0.96)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        }
-        .ignoresSafeArea()
     }
 
     private func loadProfile() async {
@@ -523,7 +542,7 @@ struct ProfileDrawerView: View {
             do {
                 try await APIClient.shared.deleteProfile(currentPassword: deletePassword)
                 authManager.logout()
-                onClose()
+                dismiss()
             } catch {
                 feedback = Feedback(kind: .error, message: error.localizedDescription)
             }
@@ -532,20 +551,22 @@ struct ProfileDrawerView: View {
 }
 
 private extension View {
-    func drawerSectionStyle() -> some View {
+    func panelSectionStyle() -> some View {
         self
             .padding(14)
-            .background(Color(.systemBackground).opacity(0.78))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.white.opacity(0.72))
+            )
             .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color("BrandLightGreen").opacity(0.45), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color("BrandDarkGreen").opacity(0.08), lineWidth: 1)
             )
     }
 }
 
 struct ProfileDrawerView_Previews: PreviewProvider {
     static var previews: some View {
-        ProfileDrawerView(authManager: AuthManager.shared, onClose: {})
+        ProfileDrawerView(authManager: AuthManager.shared)
     }
 }

@@ -1868,6 +1868,29 @@
         }
       }
     },
+    "accessibility.openProfile": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open profile"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profiel openen"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profil öffnen"
+          }
+        }
+      }
+    },
     "accessibility.openMenu": {
       "extractionState": "manual",
       "localizations": {
