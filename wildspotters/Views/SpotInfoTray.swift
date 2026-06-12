@@ -313,6 +313,7 @@ struct SpotInfoTray: View {
             .frame(height: 74)
 
             Button {
+                isComposerFocused = false
                 onSubmitComment()
             } label: {
                 if isSubmittingComment {

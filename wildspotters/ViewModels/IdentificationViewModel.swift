@@ -285,6 +285,7 @@ final class IdentificationViewModel: ObservableObject {
                 await advanceToNextSpot()
             }
         } catch {
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
             panelState = .hidden
             errorMessage = error.localizedDescription
         }
@@ -375,6 +376,7 @@ final class IdentificationViewModel: ObservableObject {
 
             UINotificationFeedbackGenerator().notificationOccurred(.success)
         } catch {
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
             spotInfoError = error.localizedDescription
         }
     }
@@ -394,6 +396,7 @@ final class IdentificationViewModel: ObservableObject {
             favoriteCount = response.favoriteCount
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } catch {
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
             spotInfoError = error.localizedDescription
         }
     }
