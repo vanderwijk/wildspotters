@@ -270,6 +270,17 @@ final class APIClient: Sendable {
         return response.panel
     }
 
+    // MARK: - Leaderboard
+
+    func fetchLeaderboard(limit: Int = 25) async throws -> LeaderboardResponse {
+        let clampedLimit = min(max(limit, 1), 100)
+        return try await get(
+            "leaderboard",
+            queryItems: [URLQueryItem(name: "limit", value: String(clampedLimit))],
+            authenticated: true
+        )
+    }
+
     // MARK: - Catalog
 
     func fetchSpeciesCatalog(ifNoneMatch etag: String?) async throws -> SpeciesCatalogFetchResult {

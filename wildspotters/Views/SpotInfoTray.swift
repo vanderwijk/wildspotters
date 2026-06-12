@@ -21,6 +21,8 @@ struct SpotInfoTray: View {
     let onClosePanel: () -> Void
     let onRefreshComments: () async -> Void
     let onSubmitComment: () -> Void
+    let isLeaderboardActive: Bool
+    let onShowLeaderboard: () -> Void
 
     private let contentInset: CGFloat = 20
     private let panelHeight: CGFloat = 340
@@ -62,7 +64,7 @@ struct SpotInfoTray: View {
     }
 
     private var iconBar: some View {
-        HStack(spacing: 28) {
+        HStack(spacing: 18) {
             trayButton(
                 panel: .comments,
                 icon: "bubble.left.and.bubble.right",
@@ -86,6 +88,8 @@ struct SpotInfoTray: View {
                 count: favoriteCount,
                 label: String(localized: "spotInfo.likes.title")
             )
+
+            leaderboardButton
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
@@ -141,6 +145,26 @@ struct SpotInfoTray: View {
         .opacity(spot == nil ? 0.45 : 1)
         .accessibilityLabel(label)
         .accessibilityValue(count.map(String.init) ?? "")
+    }
+
+    private var leaderboardButton: some View {
+        Button {
+            onShowLeaderboard()
+        } label: {
+            ZStack {
+                Capsule()
+                    .fill(isLeaderboardActive ? Color("BrandBeige") : Color.white.opacity(0.12))
+
+                Image(systemName: isLeaderboardActive ? "trophy.fill" : "trophy")
+                    .font(.system(size: 21, weight: .semibold))
+                    .foregroundStyle(isLeaderboardActive ? Color("BrandDarkGreen") : .white)
+            }
+            .frame(width: 46, height: 40)
+        }
+        .buttonStyle(.plain)
+        .disabled(spot == nil)
+        .opacity(spot == nil ? 0.45 : 1)
+        .accessibilityLabel(String(localized: "spotInfo.leaderboard.title"))
     }
 
     @ViewBuilder

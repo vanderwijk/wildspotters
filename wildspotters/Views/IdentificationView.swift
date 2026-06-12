@@ -11,6 +11,7 @@ struct IdentificationView: View {
     @State private var suppressSpeciesTap = false
     @State private var speciesTapResetTask: Task<Void, Never>?
     @State private var isProfileDrawerPresented = false
+    @State private var isLeaderboardPresented = false
 
     private let swipeCommitThreshold: CGFloat = 72
     // Grass (50) + icon bar (40 + 2×12 padding) + a little breathing room.
@@ -132,7 +133,7 @@ struct IdentificationView: View {
                         }
                         .buttonStyle(.borderless)
                         .accessibilityLabel(String(localized: "common.logout"))
-                        .disabled(isProfileDrawerPresented)
+                        .disabled(isProfileDrawerPresented || isLeaderboardPresented)
                         .accessibilityHidden(isProfileDrawerPresented)
                     }
                     ToolbarItem(placement: .topBarTrailing) {
@@ -156,6 +157,9 @@ struct IdentificationView: View {
                                 : String(localized: "accessibility.openMenu")
                         )
                     }
+                }
+                .sheet(isPresented: $isLeaderboardPresented) {
+                    LeaderboardView()
                 }
                 .task {
                     await viewModel.loadInitial()
@@ -204,6 +208,11 @@ struct IdentificationView: View {
             },
             onSubmitComment: {
                 Task { await viewModel.submitComment() }
+            },
+            isLeaderboardActive: isLeaderboardPresented,
+            onShowLeaderboard: {
+                viewModel.closeSpotInfoPanel()
+                isLeaderboardPresented = true
             }
         )
     }
