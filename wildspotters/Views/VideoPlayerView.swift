@@ -134,7 +134,7 @@ final class PlayerUIView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        avPlayerLayer.videoGravity = .resizeAspectFill
+        avPlayerLayer.videoGravity = .resizeAspect
         backgroundColor = .black
         isUserInteractionEnabled = false
         configureAudioSession()
