@@ -8,6 +8,7 @@ struct WildspottersApp: App {
     @State private var showLogin = false
     @State private var activationSuccessMessage: String? = nil
     @State private var passwordResetRequest: PasswordResetRequest? = nil
+    @State private var pendingSpotID: Int? = nil
 
     var body: some Scene {
         WindowGroup {
@@ -15,7 +16,7 @@ struct WildspottersApp: App {
                 if authManager.isRestoringSession {
                     SessionRestoreView()
                 } else if authManager.isAuthenticated {
-                    IdentificationView(authManager: authManager)
+                    IdentificationView(authManager: authManager, pendingSpotID: pendingSpotID)
                 } else if showLogin {
                     LoginView(
                         authManager: authManager,
@@ -51,6 +52,11 @@ struct WildspottersApp: App {
                 )
             }
             .onOpenURL { url in
+                if let spotID = Self.spotID(from: url) {
+                    pendingSpotID = spotID
+                    return
+                }
+
                 if let request = Self.passwordResetRequest(from: url) {
                     showLogin = true
                     passwordResetRequest = request
@@ -69,6 +75,45 @@ struct WildspottersApp: App {
                 }
             }
         }
+    }
+
+    /// Spot deeplinks: `wildspotters://spot?id=…` or `https://wildspotters.nl/app/spot/…`.
+    private static func spotID(from url: URL) -> Int? {
+        if url.scheme?.lowercased() == "wildspotters", url.host?.lowercased() == "spot" {
+            return spotIDFromQuery(url)
+        }
+
+        if url.scheme?.lowercased() == "https",
+           url.host?.lowercased() == "wildspotters.nl",
+           url.path.lowercased().hasPrefix("/app/spot") {
+            if let queryID = spotIDFromQuery(url) {
+                return queryID
+            }
+
+            let pathComponents = url.path.split(separator: "/").map(String.init)
+            if pathComponents.count >= 3,
+               pathComponents[0] == "app",
+               pathComponents[1] == "spot",
+               let pathID = Int(pathComponents[2]) {
+                return pathID
+            }
+        }
+
+        return nil
+    }
+
+    private static func spotIDFromQuery(_ url: URL) -> Int? {
+        let rawValue = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+            .queryItems?
+            .first(where: { $0.name.lowercased() == "id" })?
+            .value?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard let rawValue, let spotID = Int(rawValue), spotID > 0 else {
+            return nil
+        }
+
+        return spotID
     }
 
     /// Email activation links and legacy custom-scheme deep links.

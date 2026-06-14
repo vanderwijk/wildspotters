@@ -163,31 +163,39 @@ struct ProfileDrawerView: View {
 
     @ViewBuilder
     private var profileAvatar: some View {
-        if let avatar = profile?.avatar {
-            AsyncImage(url: avatar.url) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                case .failure:
-                    profileInitialAvatar
-                case .empty:
-                    ProgressView()
-                        .tint(Color("BrandGreen"))
-                @unknown default:
-                    profileInitialAvatar
+        AsyncImage(url: profile?.avatar?.url ?? APIClient.fallbackAvatarURL) { phase in
+            switch phase {
+            case .success(let image):
+                image
+                    .resizable()
+                    .scaledToFill()
+            case .failure:
+                AsyncImage(url: APIClient.fallbackAvatarURL) { fallbackPhase in
+                    switch fallbackPhase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    case .empty:
+                        ProgressView()
+                            .tint(Color("BrandGreen"))
+                    default:
+                        profileInitialAvatar
+                    }
                 }
+            case .empty:
+                ProgressView()
+                    .tint(Color("BrandGreen"))
+            @unknown default:
+                profileInitialAvatar
             }
-            .clipShape(Circle())
-            .overlay(
-                Circle()
-                    .stroke(Color("BrandLightGreen").opacity(0.55), lineWidth: 2)
-            )
-            .accessibilityLabel(avatar.alt)
-        } else {
-            profileInitialAvatar
         }
+        .clipShape(Circle())
+        .overlay(
+            Circle()
+                .stroke(Color("BrandLightGreen").opacity(0.55), lineWidth: 2)
+        )
+        .accessibilityLabel(profile?.avatar?.alt ?? "")
     }
 
     private var profileInitialAvatar: some View {

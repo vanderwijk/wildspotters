@@ -14,6 +14,14 @@ final class APIClient: Sendable {
         baseURL.appendingPathComponent(path)
     }
 
+    /// Default placeholder avatar shown when a user has no avatar set.
+    static let fallbackAvatarURL: URL = {
+        guard let url = URL(string: "https://wildspotters.nl/wp-content/themes/wildspotters-theme/images/default-avatar.png") else {
+            preconditionFailure("Invalid fallback avatar URL configuration")
+        }
+        return url
+    }()
+
     private let session: URLSession
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
@@ -212,6 +220,11 @@ final class APIClient: Sendable {
             queryItems.append(URLQueryItem(name: "exclude", value: excludeParam))
         }
         let response: SpotResponse = try await get("spot-videos/next", queryItems: queryItems, authenticated: true)
+        return response.spot
+    }
+
+    func fetchSpot(id spotID: Int) async throws -> Spot? {
+        let response: SpotResponse = try await get("spot-videos/\(spotID)", authenticated: true)
         return response.spot
     }
 

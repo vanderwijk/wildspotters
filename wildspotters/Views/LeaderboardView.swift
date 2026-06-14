@@ -257,30 +257,38 @@ struct LeaderboardView: View {
 
     @ViewBuilder
     private func avatarView(url: URL?, name: String) -> some View {
-        if let url {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                case .failure:
-                    initialsAvatar(for: name)
-                case .empty:
-                    ProgressView()
-                        .tint(Color("BrandGreen"))
-                @unknown default:
-                    initialsAvatar(for: name)
+        AsyncImage(url: url ?? APIClient.fallbackAvatarURL) { phase in
+            switch phase {
+            case .success(let image):
+                image
+                    .resizable()
+                    .scaledToFill()
+            case .failure:
+                AsyncImage(url: APIClient.fallbackAvatarURL) { fallbackPhase in
+                    switch fallbackPhase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    case .empty:
+                        ProgressView()
+                            .tint(Color("BrandGreen"))
+                    default:
+                        initialsAvatar(for: name)
+                    }
                 }
+            case .empty:
+                ProgressView()
+                    .tint(Color("BrandGreen"))
+            @unknown default:
+                initialsAvatar(for: name)
             }
-            .clipShape(Circle())
-            .overlay(
-                Circle()
-                    .stroke(Color("BrandLightGreen").opacity(0.45), lineWidth: 1.5)
-            )
-        } else {
-            initialsAvatar(for: name)
         }
+        .clipShape(Circle())
+        .overlay(
+            Circle()
+                .stroke(Color("BrandLightGreen").opacity(0.45), lineWidth: 1.5)
+        )
     }
 
     private func initialsAvatar(for name: String) -> some View {

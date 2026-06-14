@@ -36,8 +36,32 @@ final class IdentificationViewModel: ObservableObject {
         case likes
     }
 
+    /// What happened on a spot before the user navigated away from it.
+    /// Identifications (`.identified`) are final and can never be revised;
+    /// only a skip can later be overwritten by a real identification.
+    enum PreviousIdentificationOutcome {
+        case skip
+        case identified(panel: IdentificationPanel?, chosenSpeciesID: Int)
+    }
+
+    /// Single-level "back" buffer holding the spot the user just navigated
+    /// away from, including a snapshot of its comments/likes so the
+    /// previous-spot screen needs no refetch. Comments/likes remain live and
+    /// editable from this snapshot.
+    struct PreviousSpotEntry {
+        let spot: Spot
+        var comments: [SpotComment]
+        var commentCount: Int
+        var commentsOpen: Bool
+        var favoriteCount: Int
+        var isFavorited: Bool
+        var identificationOutcome: PreviousIdentificationOutcome
+    }
+
     @Published private(set) var currentSpot: Spot?
     @Published private(set) var upcomingSpot: Spot?
+    @Published private(set) var previousSpot: PreviousSpotEntry?
+    @Published private(set) var isShowingPreviousSpot = false
     @Published private(set) var isLoading = false
     @Published private(set) var isEmpty = false
     @Published private(set) var errorMessage: String?
@@ -57,6 +81,8 @@ final class IdentificationViewModel: ObservableObject {
     @Published private(set) var spotInfoMessage: String?
     @Published private(set) var spotInfoError: String?
     @Published private(set) var isCommunityVerdictPanelHidden = false
+    @Published private(set) var isPreviousCommunityVerdictPanelHidden = false
+    @Published private(set) var isSubmittingPreviousIdentification = false
 
     let catalogStore = CatalogStore.shared
     private let apiClient = APIClient.shared
@@ -93,11 +119,103 @@ final class IdentificationViewModel: ObservableObject {
     }
 
     var shouldShowCommunityVerdictPanel: Bool {
-        isPanelVisible && !isSpotInfoPanelVisible && !isCommunityVerdictPanelHidden
+        !isShowingPreviousSpot && isPanelVisible && !isSpotInfoPanelVisible && !isCommunityVerdictPanelHidden
     }
 
     var isSpotInfoPanelVisible: Bool {
         activeSpotInfoPanel != nil
+    }
+
+    /// True when video playback for the spot currently on screen should be
+    /// paused (an overlay panel covers it, or we're mid-transition).
+    var isVideoPlaybackBlocked: Bool {
+        if isShowingPreviousSpot {
+            return isSpotInfoPanelVisible
+        }
+        return isPanelVisible || isSpotInfoPanelVisible
+    }
+
+    // MARK: - Previous-spot buffer
+
+    /// True when there is a buffered previous spot the user can swipe back to.
+    var canShowPreviousSpot: Bool {
+        previousSpot != nil && !isShowingPreviousSpot
+    }
+
+    /// The spot whose data (comments/likes/etc.) the footer and content
+    /// should currently reflect.
+    var displayedSpot: Spot? {
+        isShowingPreviousSpot ? previousSpot?.spot : currentSpot
+    }
+
+    var displayedComments: [SpotComment] {
+        isShowingPreviousSpot ? (previousSpot?.comments ?? []) : spotComments
+    }
+
+    var displayedCommentCount: Int {
+        isShowingPreviousSpot ? (previousSpot?.commentCount ?? 0) : commentCount
+    }
+
+    var displayedCommentsOpen: Bool {
+        isShowingPreviousSpot ? (previousSpot?.commentsOpen ?? true) : commentsOpen
+    }
+
+    var displayedFavoriteCount: Int {
+        isShowingPreviousSpot ? (previousSpot?.favoriteCount ?? 0) : favoriteCount
+    }
+
+    var displayedIsFavorited: Bool {
+        isShowingPreviousSpot ? (previousSpot?.isFavorited ?? false) : isFavorited
+    }
+
+    /// Identifications are final. The previous-spot screen is only editable
+    /// when the buffered action was a skip (which may still be overwritten).
+    var isPreviousSpotEditable: Bool {
+        guard isShowingPreviousSpot else { return false }
+        if case .skip = previousSpot?.identificationOutcome { return true }
+        return false
+    }
+
+    /// The species the user previously chose, used to highlight it (read-only)
+    /// in the species grid on the previous-spot screen.
+    var previousChosenSpeciesID: Int? {
+        if case .identified(_, let chosenSpeciesID) = previousSpot?.identificationOutcome {
+            return chosenSpeciesID
+        }
+        return nil
+    }
+
+    /// The species the user just chose for the current spot, used to highlight
+    /// it in the species grid the instant they tap it — while the submission
+    /// is in flight, while the community verdict panel is showing, and after
+    /// it's been minimized.
+    var currentChosenSpeciesID: Int? {
+        switch panelState {
+        case .submitting(let species):
+            return species.id
+        case .showing(let panel):
+            return panel.selectedSpecies.id
+        case .hidden:
+            return nil
+        }
+    }
+
+    var previousPanelState: PanelState {
+        if case .identified(let panel, _) = previousSpot?.identificationOutcome, let panel {
+            return .showing(panel)
+        }
+        return .hidden
+    }
+
+    /// Read-only community verdict panel for the previous spot. Never shows a
+    /// countdown / auto-advance — the icon bar's existing arrow is the only
+    /// way back to the current spot.
+    var shouldShowPreviousCommunityVerdictPanel: Bool {
+        guard isShowingPreviousSpot, !isSpotInfoPanelVisible, !isPreviousCommunityVerdictPanelHidden else { return false }
+        if case .identified(let panel, _) = previousSpot?.identificationOutcome {
+            return panel != nil
+        }
+        return false
     }
 
     func selectableSpecies(for spot: Spot) -> [Species] {
@@ -110,6 +228,27 @@ final class IdentificationViewModel: ObservableObject {
         async let catalogRefresh: () = catalogStore.refresh()
         async let spotsLoad: () = loadFirstSpot()
         _ = await (catalogRefresh, spotsLoad)
+    }
+
+    func loadSpot(byID spotID: Int) async {
+        isLoading = true
+        defer { isLoading = false }
+
+        isShowingPreviousSpot = false
+        previousSpot = nil
+        errorMessage = nil
+        isEmpty = false
+
+        do {
+            if let spot = try await apiClient.fetchSpot(id: spotID) {
+                showSpot(spot)
+                preloadNextSpot()
+            } else {
+                showEmptyState()
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     private func loadFirstSpot() async {
@@ -222,6 +361,11 @@ final class IdentificationViewModel: ObservableObject {
         isAdvancing = true
         defer { isAdvancing = false }
 
+        isShowingPreviousSpot = false
+        // Collapsed by default: don't auto-pop the verdict panel for the spot
+        // we're leaving when the user later swipes back to it.
+        isPreviousCommunityVerdictPanelHidden = true
+
         if let preloadedSpot = consumePreloadedSpot() {
             showSpot(preloadedSpot)
             preloadNextSpot()
@@ -243,6 +387,80 @@ final class IdentificationViewModel: ObservableObject {
         }
     }
 
+    /// Moves the spot we're leaving into the single-level "back" buffer,
+    /// reusing its already-loaded comments/likes/identification result.
+    /// Keeps its video player warm in `PlayerCache` (no release) so swiping
+    /// back doesn't reload it, and releases whatever was buffered before.
+    private func captureCurrentSpotAsPrevious() {
+        guard let spot = currentSpot else { return }
+
+        let outcome: PreviousIdentificationOutcome
+        if case .showing(let panel) = panelState {
+            outcome = .identified(panel: panel, chosenSpeciesID: panel.selectedSpecies.id)
+        } else {
+            outcome = .skip
+        }
+
+        if let oldPrevious = previousSpot {
+            PlayerCache.shared.releasePlayer(for: oldPrevious.spot.videoURL)
+        }
+
+        // Retain an extra reference so the player survives this spot's
+        // VideoPlayerView being dismantled when the next spot is shown.
+        _ = PlayerCache.shared.retainPlayer(for: spot.videoURL)
+
+        previousSpot = PreviousSpotEntry(
+            spot: spot,
+            comments: spotComments,
+            commentCount: commentCount,
+            commentsOpen: commentsOpen,
+            favoriteCount: favoriteCount,
+            isFavorited: isFavorited,
+            identificationOutcome: outcome
+        )
+    }
+
+    // MARK: - Previous-spot navigation
+
+    /// Swipe right (or tap the arrow on the previous screen's mirror) to peek
+    /// at the buffered previous spot. Pure UI toggle: no fetch, `currentSpot`
+    /// is untouched.
+    func showPreviousSpot() {
+        guard previousSpot != nil, !isShowingPreviousSpot, !isAdvancing else { return }
+
+        if hasAnsweredCurrentSpot {
+            cancelCountdown()
+        }
+        closeSpotInfoPanel()
+        isShowingPreviousSpot = true
+    }
+
+    /// Returns from the previous-spot screen back to the current spot.
+    func returnToCurrentSpot() {
+        guard isShowingPreviousSpot else { return }
+
+        closeSpotInfoPanel()
+        isShowingPreviousSpot = false
+
+        if hasAnsweredCurrentSpot && !isCommunityVerdictPanelHidden {
+            startCountdown()
+        }
+    }
+
+    func hidePreviousCommunityVerdictPanel() {
+        guard shouldShowPreviousCommunityVerdictPanel else { return }
+        isPreviousCommunityVerdictPanelHidden = true
+    }
+
+    /// Toggles the read-only community verdict panel for the previous spot,
+    /// e.g. when the user taps their already-chosen species tile to check
+    /// what the community thought again.
+    func togglePreviousCommunityVerdictPanel() {
+        guard isShowingPreviousSpot, !isSpotInfoPanelVisible else { return }
+        guard case .identified(let panel, _) = previousSpot?.identificationOutcome, panel != nil else { return }
+        isPreviousCommunityVerdictPanelHidden.toggle()
+    }
+
     // MARK: - Skip (swipe forward)
 
     /// Called when user swipes left. Advances to the next spot with a
@@ -250,6 +468,7 @@ final class IdentificationViewModel: ObservableObject {
     func skipCurrentSpot() async {
         guard let spot = currentSpot, !isAdvancing else { return }
 
+        captureCurrentSpotAsPrevious()
         let transitionResult = await moveToNextSpot()
         guard transitionResult != .failed else { return }
 
@@ -269,6 +488,11 @@ final class IdentificationViewModel: ObservableObject {
     // MARK: - Identification (species tap)
 
     func submitIdentification(species: Species) async {
+        if isShowingPreviousSpot {
+            await submitIdentificationForPreviousSpot(species: species)
+            return
+        }
+
         guard let spot = currentSpot, !isAdvancing else { return }
 
         closeSpotInfoPanel()
@@ -293,8 +517,31 @@ final class IdentificationViewModel: ObservableObject {
         }
     }
 
+    /// Overwrites a previously-skipped spot with a real identification.
+    /// Once this succeeds the result becomes final, exactly like the current
+    /// spot's identification — no further changes are possible.
+    private func submitIdentificationForPreviousSpot(species: Species) async {
+        guard isPreviousSpotEditable, let entry = previousSpot, !isSubmittingPreviousIdentification else { return }
+
+        isSubmittingPreviousIdentification = true
+        defer { isSubmittingPreviousIdentification = false }
+
+        let identification = Identification(spotID: entry.spot.id, speciesID: species.id)
+
+        do {
+            let panel = try await apiClient.submitIdentification(identification)
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            previousSpot?.identificationOutcome = .identified(panel: panel, chosenSpeciesID: species.id)
+            isPreviousCommunityVerdictPanelHidden = false
+        } catch {
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+            spotInfoError = error.localizedDescription
+        }
+    }
+
     func advanceToNextSpot() async {
         guard !isAdvancing else { return }
+        captureCurrentSpotAsPrevious()
         cancelCountdown()
         panelState = .hidden
         isCommunityVerdictPanelHidden = false
@@ -308,10 +555,25 @@ final class IdentificationViewModel: ObservableObject {
         isCommunityVerdictPanelHidden = true
     }
 
+    /// Toggles the community verdict panel for the current spot, e.g. when
+    /// the user taps their already-chosen species tile after minimizing it.
+    func toggleCommunityVerdictPanel() {
+        guard !isShowingPreviousSpot, isPanelVisible, !isSpotInfoPanelVisible else { return }
+
+        if isCommunityVerdictPanelHidden {
+            isCommunityVerdictPanelHidden = false
+            if hasAnsweredCurrentSpot {
+                startCountdown()
+            }
+        } else {
+            hideCommunityVerdictPanel()
+        }
+    }
+
     // MARK: - Spot info
 
     func toggleSpotInfoPanel(_ panel: SpotInfoPanel) async {
-        guard currentSpot != nil, !isSubmittingIdentification, !isAdvancing else { return }
+        guard displayedSpot != nil, !isSubmittingIdentification, !isAdvancing else { return }
 
         if panel == .likes {
             closeSpotInfoPanel()
@@ -324,7 +586,7 @@ final class IdentificationViewModel: ObservableObject {
             return
         }
 
-        if hasAnsweredCurrentSpot {
+        if !isShowingPreviousSpot && hasAnsweredCurrentSpot {
             cancelCountdown()
         }
 
@@ -343,7 +605,7 @@ final class IdentificationViewModel: ObservableObject {
         spotInfoMessage = nil
         spotInfoError = nil
 
-        if hadSpotInfoPanel && hasAnsweredCurrentSpot && !isCommunityVerdictPanelHidden {
+        if !isShowingPreviousSpot && hadSpotInfoPanel && hasAnsweredCurrentSpot && !isCommunityVerdictPanelHidden {
             startCountdown()
         }
     }
@@ -353,7 +615,7 @@ final class IdentificationViewModel: ObservableObject {
     }
 
     func submitComment() async {
-        guard let spot = currentSpot, !isSubmittingComment else { return }
+        guard let spot = displayedSpot, !isSubmittingComment else { return }
 
         let content = commentDraft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !content.isEmpty else { return }
@@ -365,14 +627,24 @@ final class IdentificationViewModel: ObservableObject {
 
         do {
             let response = try await apiClient.submitComment(content, for: spot.id)
-            commentsOpen = response.commentsOpen
-            commentCount = response.commentCount
+
+            if isShowingPreviousSpot {
+                previousSpot?.commentsOpen = response.commentsOpen
+                previousSpot?.commentCount = response.commentCount
+            } else {
+                commentsOpen = response.commentsOpen
+                commentCount = response.commentCount
+            }
             commentDraft = ""
 
             if response.comment.isPending {
                 spotInfoMessage = String(localized: "spotInfo.comments.pending")
             } else {
-                spotComments.append(response.comment)
+                if isShowingPreviousSpot {
+                    previousSpot?.comments.append(response.comment)
+                } else {
+                    spotComments.append(response.comment)
+                }
                 spotInfoMessage = String(localized: "spotInfo.comments.posted")
             }
 
@@ -384,9 +656,9 @@ final class IdentificationViewModel: ObservableObject {
     }
 
     func toggleFavorite() async {
-        guard let spot = currentSpot, !isUpdatingFavorite else { return }
+        guard let spot = displayedSpot, !isUpdatingFavorite else { return }
 
-        let desiredState = !isFavorited
+        let desiredState = !displayedIsFavorited
         isUpdatingFavorite = true
         spotInfoMessage = nil
         spotInfoError = nil
@@ -394,8 +666,15 @@ final class IdentificationViewModel: ObservableObject {
 
         do {
             let response = try await apiClient.setFavorite(desiredState, for: spot.id)
-            isFavorited = response.isFavorited
-            favoriteCount = response.favoriteCount
+
+            if isShowingPreviousSpot {
+                previousSpot?.isFavorited = response.isFavorited
+                previousSpot?.favoriteCount = response.favoriteCount
+            } else {
+                isFavorited = response.isFavorited
+                favoriteCount = response.favoriteCount
+            }
+
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } catch {
             UINotificationFeedbackGenerator().notificationOccurred(.error)
@@ -404,13 +683,16 @@ final class IdentificationViewModel: ObservableObject {
     }
 
     private func loadCommentsIfNeeded() async {
-        guard spotComments.isEmpty else { return }
+        let alreadyLoaded = isShowingPreviousSpot ? !(previousSpot?.comments.isEmpty ?? true) : !spotComments.isEmpty
+        guard !alreadyLoaded else { return }
         await loadComments(force: false)
     }
 
     private func loadComments(force: Bool) async {
-        guard let spot = currentSpot, !isLoadingComments else { return }
-        guard force || spotComments.isEmpty else { return }
+        guard let spot = displayedSpot, !isLoadingComments else { return }
+
+        let isEmptyCurrently = isShowingPreviousSpot ? (previousSpot?.comments.isEmpty ?? true) : spotComments.isEmpty
+        guard force || isEmptyCurrently else { return }
 
         isLoadingComments = true
         spotInfoError = nil
@@ -418,10 +700,17 @@ final class IdentificationViewModel: ObservableObject {
 
         do {
             let response = try await apiClient.fetchComments(for: spot.id)
-            guard currentSpot?.id == spot.id else { return }
-            spotComments = response.comments
-            commentCount = response.commentCount
-            commentsOpen = response.commentsOpen
+            guard displayedSpot?.id == spot.id else { return }
+
+            if isShowingPreviousSpot {
+                previousSpot?.comments = response.comments
+                previousSpot?.commentCount = response.commentCount
+                previousSpot?.commentsOpen = response.commentsOpen
+            } else {
+                spotComments = response.comments
+                commentCount = response.commentCount
+                commentsOpen = response.commentsOpen
+            }
         } catch {
             spotInfoError = error.localizedDescription
         }
@@ -471,6 +760,11 @@ final class IdentificationViewModel: ObservableObject {
         preloadTask?.cancel()
         preloadTask = nil
         clearPreloadedSpot()
+
+        if let previousSpot {
+            PlayerCache.shared.releasePlayer(for: previousSpot.spot.videoURL)
+        }
+        previousSpot = nil
     }
 
     private func submitSkip(for spot: Spot) async {

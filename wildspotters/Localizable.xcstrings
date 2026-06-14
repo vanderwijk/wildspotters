@@ -695,6 +695,29 @@
         }
       }
     },
+    "identification.yourChoiceSpecies": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your choice: %@"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jouw keuze: %@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Auswahl: %@"
+          }
+        }
+      }
+    },
     "leaderboard.confirmedCount": {
       "extractionState": "manual",
       "localizations": {
@@ -1749,6 +1772,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Likes"
+          }
+        }
+      }
+    },
+    "spotInfo.nextSpot.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volgende"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weiter"
           }
         }
       }

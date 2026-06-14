@@ -8,10 +8,13 @@ struct IdentificationView: View {
     @GestureState private var swipeTranslation: CGFloat = 0
     @State private var committedSwipeSpotID: Int?
     @State private var committedSwipeOffset: CGFloat = 0
+    @State private var isPreviousSpotTransitionActive = false
+    @State private var previousSpotTransitionOffset: CGFloat = 0
     @State private var suppressSpeciesTap = false
     @State private var speciesTapResetTask: Task<Void, Never>?
     @State private var isProfileDrawerPresented = false
     @State private var isLeaderboardPresented = false
+    var pendingSpotID: Int? = nil
 
     private let swipeCommitThreshold: CGFloat = 72
     // Grass (50) + icon bar (40 + 2×12 padding) + a little breathing room.
@@ -114,8 +117,12 @@ struct IdentificationView: View {
                 .sheet(isPresented: $isProfileDrawerPresented) {
                     ProfileDrawerView(authManager: authManager)
                 }
-                .task {
-                    await viewModel.loadInitial()
+                .task(id: pendingSpotID) {
+                    if let spotID = pendingSpotID {
+                        await viewModel.loadSpot(byID: spotID)
+                    } else {
+                        await viewModel.loadInitial()
+                    }
                 }
                 .onDisappear {
                     speciesTapResetTask?.cancel()
@@ -137,13 +144,13 @@ struct IdentificationView: View {
 
     private var footerBar: some View {
         SpotInfoTray(
-            spot: viewModel.currentSpot,
+            spot: viewModel.displayedSpot,
             activePanel: viewModel.activeSpotInfoPanel,
-            commentCount: viewModel.commentCount,
-            favoriteCount: viewModel.favoriteCount,
-            isFavorited: viewModel.isFavorited,
-            comments: viewModel.spotComments,
-            commentsOpen: viewModel.commentsOpen,
+            commentCount: viewModel.displayedCommentCount,
+            favoriteCount: viewModel.displayedFavoriteCount,
+            isFavorited: viewModel.displayedIsFavorited,
+            comments: viewModel.displayedComments,
+            commentsOpen: viewModel.displayedCommentsOpen,
             isLoadingComments: viewModel.isLoadingComments,
             isSubmittingComment: viewModel.isSubmittingComment,
             isUpdatingFavorite: viewModel.isUpdatingFavorite,
@@ -161,6 +168,13 @@ struct IdentificationView: View {
             },
             onSubmitComment: {
                 Task { await viewModel.submitComment() }
+            },
+            onAdvance: {
+                if viewModel.isShowingPreviousSpot {
+                    viewModel.returnToCurrentSpot()
+                } else {
+                    Task { await viewModel.advanceOrSkipCurrentSpotFromSwipe() }
+                }
             }
         )
     }
@@ -169,15 +183,33 @@ struct IdentificationView: View {
 
     private func spotPager(_ spot: Spot, containerWidth: CGFloat) -> some View {
         ZStack(alignment: .bottom) {
-            if let nextSpot = viewModel.upcomingSpot, nextSpot.id != spot.id {
-                // Intentionally render the full incoming card for a seamless swipe handoff without pop-in.
-                spotContent(nextSpot, isPreview: true, containerWidth: containerWidth)
+            if viewModel.isShowingPreviousSpot, let previousEntry = viewModel.previousSpot {
+                // Peek of the current spot, sliding back in from the right
+                // while the user swipes left to return.
+                spotContent(spot, isPreview: true, containerWidth: containerWidth)
                     .offset(x: nextCardOffset(containerWidth: containerWidth))
                     .allowsHitTesting(false)
-            }
 
-            spotContent(spot, containerWidth: containerWidth)
-                .id(spot.id)
+                spotContent(previousEntry.spot, isPreviousSpot: true, containerWidth: containerWidth)
+                    .id("previous-\(previousEntry.spot.id)")
+            } else {
+                if viewModel.canShowPreviousSpot, let previousEntry = viewModel.previousSpot {
+                    // Peek of the previous spot, sliding in from the left.
+                    spotContent(previousEntry.spot, isPreview: true, isPreviousSpot: true, containerWidth: containerWidth)
+                        .offset(x: previousCardOffset(containerWidth: containerWidth))
+                        .allowsHitTesting(false)
+                }
+
+                if let nextSpot = viewModel.upcomingSpot, nextSpot.id != spot.id {
+                    // Intentionally render the full incoming card for a seamless swipe handoff without pop-in.
+                    spotContent(nextSpot, isPreview: true, containerWidth: containerWidth)
+                        .offset(x: nextCardOffset(containerWidth: containerWidth))
+                        .allowsHitTesting(false)
+                }
+
+                spotContent(spot, containerWidth: containerWidth)
+                    .id(spot.id)
+            }
 
             if viewModel.isAdvancing {
                 ProgressView(String(localized: "identification.loading"))
@@ -186,7 +218,7 @@ struct IdentificationView: View {
                     .background(.ultraThinMaterial, in: Capsule())
             }
 
-            // Community verdict panel overlay
+            // Community verdict panel overlay (current spot)
             if viewModel.shouldShowCommunityVerdictPanel {
                 CommunityVerdictPanel(
                     panelState: viewModel.panelState,
@@ -203,17 +235,40 @@ struct IdentificationView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .padding(.bottom, 8)
             }
+
+            // Read-only community verdict for the previous spot — no countdown,
+            // no auto-advance. The icon bar's arrow is the only way back.
+            if viewModel.shouldShowPreviousCommunityVerdictPanel {
+                CommunityVerdictPanel(
+                    panelState: viewModel.previousPanelState,
+                    catalogStore: viewModel.catalogStore,
+                    countdownRemaining: 0,
+                    countdownDuration: viewModel.countdownDuration,
+                    hideCountdown: true,
+                    onAdvance: {},
+                    onClose: {
+                        viewModel.hidePreviousCommunityVerdictPanel()
+                    }
+                )
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .padding(.bottom, 8)
+            }
         }
         .animation(.easeInOut(duration: 0.3), value: viewModel.shouldShowCommunityVerdictPanel)
+        .animation(.easeInOut(duration: 0.3), value: viewModel.shouldShowPreviousCommunityVerdictPanel)
     }
 
     // MARK: - Subviews
 
-    private func spotContent(_ spot: Spot, isPreview: Bool = false, containerWidth: CGFloat) -> some View {
-        VStack(spacing: 0) {
+    private func spotContent(_ spot: Spot, isPreview: Bool = false, isPreviousSpot: Bool = false, containerWidth: CGFloat) -> some View {
+        let selectionEnabled = isPreviousSpot ? isPreviousSpeciesSelectionEnabled : isSpeciesSelectionEnabled
+        let highlightedSpeciesID = isPreviousSpot ? viewModel.previousChosenSpeciesID : viewModel.currentChosenSpeciesID
+
+        return VStack(spacing: 0) {
             VideoPlayerView(
                 url: spot.videoURL,
-                isActive: !isPreview && !viewModel.isPanelVisible && !viewModel.isAdvancing
+                isActive: !isPreview && !viewModel.isAdvancing && !viewModel.isSpotInfoPanelVisible
+                    && (isPreviousSpot ? true : !viewModel.isPanelVisible)
             )
             .aspectRatio(16/9, contentMode: .fit)
             .accessibilityLabel(String(localized: "accessibility.videoPlayer"))
@@ -227,16 +282,24 @@ struct IdentificationView: View {
                     SpeciesSelectionView(
                         species: viewModel.selectableSpecies(for: spot),
                         catalog: viewModel.catalogStore.species,
-                        isDisabled: !isSpeciesSelectionEnabled,
-                        dimWhenDisabled: false,
+                        isDisabled: !selectionEnabled,
+                        dimWhenDisabled: highlightedSpeciesID != nil,
+                        highlightedSpeciesID: highlightedSpeciesID,
+                        onTapHighlighted: {
+                            if isPreviousSpot {
+                                viewModel.togglePreviousCommunityVerdictPanel()
+                            } else {
+                                viewModel.toggleCommunityVerdictPanel()
+                            }
+                        }
                     ) { selected in
-                        guard isSpeciesSelectionEnabled else { return }
+                        guard selectionEnabled else { return }
                         Task {
                             await viewModel.submitIdentification(species: selected)
                         }
                     }
-                    .allowsHitTesting(isSpeciesSelectionEnabled)
-                    .accessibilityHidden(!isSpeciesSelectionEnabled)
+                    .allowsHitTesting(selectionEnabled || highlightedSpeciesID != nil)
+                    .accessibilityHidden(!selectionEnabled && highlightedSpeciesID == nil)
                 }
                 .padding(.vertical, 16)
             }
@@ -250,6 +313,7 @@ struct IdentificationView: View {
         .allowsHitTesting(!viewModel.isAdvancing)
         .animation(.interactiveSpring(response: 0.22, dampingFraction: 0.86), value: swipeTranslation)
         .animation(.interactiveSpring(response: 0.22, dampingFraction: 0.86), value: committedSwipeOffset)
+        .animation(.interactiveSpring(response: 0.22, dampingFraction: 0.86), value: previousSpotTransitionOffset)
     }
 
     private func nextSpotSwipeGesture(containerWidth: CGFloat) -> some Gesture {
@@ -266,7 +330,13 @@ struct IdentificationView: View {
                     return
                 }
 
-                state = min(0, value.translation.width)
+                if viewModel.isShowingPreviousSpot {
+                    state = min(0, value.translation.width)
+                } else if value.translation.width < 0 {
+                    state = value.translation.width
+                } else {
+                    state = viewModel.canShowPreviousSpot ? value.translation.width : 0
+                }
             }
             .onEnded { value in
                 handleNextSpotSwipe(value, containerWidth: containerWidth)
@@ -285,6 +355,42 @@ struct IdentificationView: View {
 
     private func handleNextSpotSwipe(_ value: DragGesture.Value, containerWidth: CGFloat) {
         guard canHandleSwipe(value) else {
+            return
+        }
+
+        let isLeftSwipe = value.translation.width < 0
+
+        if viewModel.isShowingPreviousSpot {
+            guard isLeftSwipe else { return }
+
+            let projectedOffset = min(value.translation.width, value.predictedEndTranslation.width)
+            guard projectedOffset < -swipeCommitThreshold else { return }
+
+            isPreviousSpotTransitionActive = true
+            previousSpotTransitionOffset = -containerWidth
+
+            Task {
+                try? await Task.sleep(for: .milliseconds(220))
+                viewModel.returnToCurrentSpot()
+                previousSpotTransitionOffset = 0
+                isPreviousSpotTransitionActive = false
+            }
+            return
+        }
+
+        if !isLeftSwipe {
+            let projectedOffset = max(value.translation.width, value.predictedEndTranslation.width)
+            guard projectedOffset > swipeCommitThreshold, viewModel.canShowPreviousSpot else { return }
+
+            isPreviousSpotTransitionActive = true
+            previousSpotTransitionOffset = containerWidth
+
+            Task {
+                try? await Task.sleep(for: .milliseconds(220))
+                viewModel.showPreviousSpot()
+                previousSpotTransitionOffset = 0
+                isPreviousSpotTransitionActive = false
+            }
             return
         }
 
@@ -310,6 +416,9 @@ struct IdentificationView: View {
     }
 
     private var cardOffset: CGFloat {
+        if isPreviousSpotTransitionActive {
+            return previousSpotTransitionOffset
+        }
         if committedSwipeSpotID == viewModel.currentSpot?.id {
             return committedSwipeOffset
         }
@@ -325,36 +434,59 @@ struct IdentificationView: View {
         return containerWidth + progressOffset
     }
 
+    private func previousCardOffset(containerWidth: CGFloat) -> CGFloat {
+        let progressOffset = max(0, min(containerWidth, cardOffset))
+        return -containerWidth + progressOffset
+    }
+
     private func canHandleSwipe(_ value: DragGesture.Value) -> Bool {
         let horizontal = abs(value.translation.width)
         let vertical = abs(value.translation.height)
         let isLeftSwipe = value.translation.width < 0
+        let isRightSwipe = value.translation.width > 0
         let isClearlyHorizontal = horizontal > (vertical * 1.35)
         let hasEnoughHorizontalTravel = horizontal >= 24
 
-        return isLeftSwipe
-            && isClearlyHorizontal
+        let baseConditions = isClearlyHorizontal
             && hasEnoughHorizontalTravel
-            && !viewModel.isSubmittingIdentification
             && !viewModel.isSpotInfoPanelVisible
             && !viewModel.isAdvancing
+            && !isPreviousSpotTransitionActive
+            && committedSwipeSpotID == nil
+
+        if viewModel.isShowingPreviousSpot {
+            return isLeftSwipe && baseConditions
+        }
+
+        let directionAllowed = isLeftSwipe || (isRightSwipe && viewModel.canShowPreviousSpot)
+
+        return directionAllowed
+            && baseConditions
+            && !viewModel.isSubmittingIdentification
     }
 
     private func shouldSuppressSpeciesTap(for value: DragGesture.Value) -> Bool {
         let horizontal = abs(value.translation.width)
         let vertical = abs(value.translation.height)
-        let isLeftSwipe = value.translation.width < 0
         let isMostlyHorizontal = horizontal > vertical
 
-        return isLeftSwipe && isMostlyHorizontal && horizontal >= 8
+        return isMostlyHorizontal && horizontal >= 8
     }
 
     private var isSwipeTransitionActive: Bool {
-        swipeTranslation < -1 || committedSwipeSpotID == viewModel.currentSpot?.id
+        swipeTranslation != 0 || committedSwipeSpotID == viewModel.currentSpot?.id || isPreviousSpotTransitionActive
     }
 
     private var isSpeciesSelectionEnabled: Bool {
         !(viewModel.isPanelVisible || viewModel.isSpotInfoPanelVisible || viewModel.isAdvancing || suppressSpeciesTap || isSwipeTransitionActive)
+    }
+
+    private var isPreviousSpeciesSelectionEnabled: Bool {
+        viewModel.isPreviousSpotEditable
+            && !viewModel.isSubmittingPreviousIdentification
+            && !viewModel.isSpotInfoPanelVisible
+            && !suppressSpeciesTap
+            && !isSwipeTransitionActive
     }
 
     private func backgroundView(height: CGFloat) -> some View {

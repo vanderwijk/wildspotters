@@ -21,6 +21,7 @@ struct SpotInfoTray: View {
     let onClosePanel: () -> Void
     let onRefreshComments: () async -> Void
     let onSubmitComment: () -> Void
+    let onAdvance: () -> Void
 
     private let contentInset: CGFloat = 20
     private let panelHeight: CGFloat = 340
@@ -86,10 +87,35 @@ struct SpotInfoTray: View {
                 count: favoriteCount,
                 label: String(localized: "spotInfo.likes.title")
             )
+
+            Spacer()
+
+            nextSpotButton
         }
         .frame(maxWidth: .infinity)
+        .padding(.horizontal, contentInset)
         .padding(.vertical, 12)
         .background(Color("BrandDarkGreen").ignoresSafeArea(edges: .bottom))
+    }
+
+    private var nextSpotButton: some View {
+        Button {
+            onAdvance()
+        } label: {
+            ZStack {
+                Capsule()
+                    .fill(Color.white.opacity(0.12))
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 21, weight: .semibold))
+                    .foregroundStyle(.white)
+            }
+            .frame(width: 46, height: 40)
+        }
+        .buttonStyle(.plain)
+        .disabled(spot == nil)
+        .opacity(spot == nil ? 0.45 : 1)
+        .accessibilityLabel(String(localized: "spotInfo.nextSpot.title"))
     }
 
     private func trayButton(

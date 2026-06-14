@@ -6,6 +6,7 @@ struct CommunityVerdictPanel: View {
     let catalogStore: CatalogStore
     let countdownRemaining: Int
     let countdownDuration: Int
+    var hideCountdown: Bool = false
     let onAdvance: () -> Void
     let onClose: () -> Void
 
@@ -53,11 +54,13 @@ struct CommunityVerdictPanel: View {
                     .font(.caption)
                     .foregroundStyle(Color("BrandLightGreen").opacity(0.7))
 
-                CountdownButton(
-                    remaining: countdownRemaining,
-                    duration: countdownDuration,
-                    action: onAdvance
-                )
+                if !hideCountdown {
+                    CountdownButton(
+                        remaining: countdownRemaining,
+                        duration: countdownDuration,
+                        action: onAdvance
+                    )
+                }
             } else {
                 // Loading state
                 ProgressView()

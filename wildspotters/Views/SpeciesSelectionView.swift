@@ -8,7 +8,9 @@ struct SpeciesSelectionView: View {
     let catalog: [Int: CatalogSpecies]
     let isDisabled: Bool
     let dimWhenDisabled: Bool
+    let highlightedSpeciesID: Int?
     let onSelect: (Species) -> Void
+    let onTapHighlighted: (() -> Void)?
 
     private let columns = [
         GridItem(.adaptive(minimum: 100), spacing: 12)
@@ -18,22 +20,39 @@ struct SpeciesSelectionView: View {
         LazyVGrid(columns: columns, spacing: 12) {
             ForEach(species) { item in
                 let catalogItem = catalog[item.id]
+                let isHighlighted = item.id == highlightedSpeciesID
                 Button {
-                    onSelect(item)
+                    if isHighlighted, let onTapHighlighted {
+                        onTapHighlighted()
+                    } else {
+                        onSelect(item)
+                    }
                 } label: {
                     VStack(spacing: 0) {
-                        if catalogItem?.imageURL != nil {
-                            SpeciesImageView(speciesID: item.id, catalogItem: catalogItem)
-                                .frame(maxWidth: .infinity)
-                                .aspectRatio(1, contentMode: .fill)
-                                .clipped()
-                        } else {
-                            speciesPlaceholder
+                        Group {
+                            if catalogItem?.imageURL != nil {
+                                SpeciesImageView(speciesID: item.id, catalogItem: catalogItem)
+                                    .frame(maxWidth: .infinity)
+                                    .aspectRatio(1, contentMode: .fill)
+                                    .clipped()
+                            } else {
+                                speciesPlaceholder
+                            }
+                        }
+                        .overlay(alignment: .topTrailing) {
+                            if isHighlighted {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .symbolRenderingMode(.palette)
+                                    .foregroundStyle(.white, Color("BrandGreen"))
+                                    .font(.system(size: 22))
+                                    .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 1)
+                                    .padding(5)
+                            }
                         }
 
                         Text(item.displayName)
                             .font(.caption2.weight(.semibold))
-                            .foregroundStyle(Color("BrandDarkGray"))
+                            .foregroundStyle(isHighlighted ? Color("BrandGreen") : Color("BrandDarkGray"))
                             .lineLimit(2)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity)
@@ -43,11 +62,14 @@ struct SpeciesSelectionView: View {
                     .padding([.top, .horizontal], 6)
                     .background(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
-                    .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(isHighlighted ? Color("BrandGreen") : Color.clear, lineWidth: 2.5)
+                    }
+                    .shadow(color: (isHighlighted ? Color("BrandGreen") : .black).opacity(isHighlighted ? 0.3 : 0.08), radius: 4, x: 0, y: 2)
                 }
                 .buttonStyle(.plain)
-                .disabled(isDisabled)
-                .opacity(isDisabled && dimWhenDisabled ? 0.5 : 1)
+                .allowsHitTesting(!isDisabled || (isHighlighted && onTapHighlighted != nil))
                 .accessibilityLabel(item.displayName)
                 .accessibilityHint(String(localized: "accessibility.speciesHint"))
             }
@@ -60,12 +82,16 @@ struct SpeciesSelectionView: View {
         catalog: [Int: CatalogSpecies],
         isDisabled: Bool,
         dimWhenDisabled: Bool = true,
+        highlightedSpeciesID: Int? = nil,
+        onTapHighlighted: (() -> Void)? = nil,
         onSelect: @escaping (Species) -> Void
     ) {
         self.species = species
         self.catalog = catalog
         self.isDisabled = isDisabled
         self.dimWhenDisabled = dimWhenDisabled
+        self.highlightedSpeciesID = highlightedSpeciesID
+        self.onTapHighlighted = onTapHighlighted
         self.onSelect = onSelect
     }
 
