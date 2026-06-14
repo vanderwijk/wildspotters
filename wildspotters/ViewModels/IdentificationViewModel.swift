@@ -86,9 +86,11 @@ final class IdentificationViewModel: ObservableObject {
 
     let catalogStore = CatalogStore.shared
     private let apiClient = APIClient.shared
+    private let pendingSkipStore = PendingSkipStore.shared
     private let logger = Logger(subsystem: "nl.wildspotters.app", category: "Identification")
     private var countdownTask: Task<Void, Never>?
     private var preloadTask: Task<Void, Never>?
+    private var pendingSkipFlushTask: Task<Void, Never>?
     private var preloadedSpot: Spot?
     private var recentSpotIDs: [Int] = []
     private static let countdownDuration = 10
@@ -227,7 +229,8 @@ final class IdentificationViewModel: ObservableObject {
     func loadInitial() async {
         async let catalogRefresh: () = catalogStore.refresh()
         async let spotsLoad: () = loadFirstSpot()
-        _ = await (catalogRefresh, spotsLoad)
+        async let skipFlush: () = flushPendingSkips()
+        _ = await (catalogRefresh, spotsLoad, skipFlush)
     }
 
     func loadSpot(byID spotID: Int) async {
@@ -240,18 +243,19 @@ final class IdentificationViewModel: ObservableObject {
         isEmpty = false
 
         async let catalogRefresh: () = catalogStore.refresh()
+        async let skipFlush: () = flushPendingSkips()
 
         do {
             if let spot = try await apiClient.fetchSpot(id: spotID) {
-                _ = await catalogRefresh
+                _ = await (catalogRefresh, skipFlush)
                 showSpot(spot)
                 preloadNextSpot()
             } else {
-                _ = await catalogRefresh
+                _ = await (catalogRefresh, skipFlush)
                 showEmptyState()
             }
         } catch {
-            _ = await catalogRefresh
+            _ = await (catalogRefresh, skipFlush)
             errorMessage = error.localizedDescription
         }
     }
@@ -764,6 +768,8 @@ final class IdentificationViewModel: ObservableObject {
         cancelCountdown()
         preloadTask?.cancel()
         preloadTask = nil
+        pendingSkipFlushTask?.cancel()
+        pendingSkipFlushTask = nil
         clearPreloadedSpot()
 
         if let previousSpot {
@@ -773,27 +779,66 @@ final class IdentificationViewModel: ObservableObject {
     }
 
     private func submitSkip(for spot: Spot) async {
-        let skip = Identification(spotID: spot.id, speciesID: Self.skipTermID)
+        await submitSkip(forSpotID: spot.id)
+    }
+
+    private func submitSkip(forSpotID spotID: Int) async {
+        let skip = Identification(spotID: spotID, speciesID: Self.skipTermID)
 
         for attempt in 1...Self.skipSubmissionMaxAttempts {
             do {
                 _ = try await apiClient.submitIdentification(skip)
+                pendingSkipStore.remove(spotID)
                 if attempt > 1 {
-                    logger.info("Skip submission succeeded for spot \(spot.id, privacy: .public) on attempt \(attempt, privacy: .public)")
+                    logger.info("Skip submission succeeded for spot \(spotID, privacy: .public) on attempt \(attempt, privacy: .public)")
                 }
                 return
             } catch is CancellationError {
                 return
             } catch {
-                logger.error("Skip submission failed for spot \(spot.id, privacy: .public) (attempt \(attempt, privacy: .public)/\(Self.skipSubmissionMaxAttempts, privacy: .public)): \(error.localizedDescription, privacy: .public)")
+                logger.error("Skip submission failed for spot \(spotID, privacy: .public) (attempt \(attempt, privacy: .public)/\(Self.skipSubmissionMaxAttempts, privacy: .public)): \(error.localizedDescription, privacy: .public)")
 
-                guard attempt < Self.skipSubmissionMaxAttempts else { return }
+                guard attempt < Self.skipSubmissionMaxAttempts else { break }
 
-                // Exponential backoff: 2s, 4s
                 let delay = Self.skipSubmissionRetryBaseDelay * pow(2, Double(attempt - 1))
                 do {
                     try await Task.sleep(for: .seconds(delay))
                 } catch {
+                    return
+                }
+            }
+        }
+
+        pendingSkipStore.enqueue(spotID)
+        schedulePendingSkipFlush()
+    }
+
+    private func flushPendingSkips() async {
+        let spotIDs = pendingSkipStore.pendingSpotIDs()
+        guard !spotIDs.isEmpty else { return }
+
+        for spotID in spotIDs {
+            guard !Task.isCancelled else { return }
+            await submitSkip(forSpotID: spotID)
+        }
+    }
+
+    private func schedulePendingSkipFlush() {
+        pendingSkipFlushTask?.cancel()
+        pendingSkipFlushTask = Task {
+            let retryDelays: [Double] = [30, 60, 120, 300]
+
+            for delay in retryDelays {
+                do {
+                    try await Task.sleep(for: .seconds(delay))
+                } catch {
+                    return
+                }
+
+                guard !Task.isCancelled else { return }
+                await flushPendingSkips()
+
+                if pendingSkipStore.pendingSpotIDs().isEmpty {
                     return
                 }
             }
@@ -803,5 +848,6 @@ final class IdentificationViewModel: ObservableObject {
     deinit {
         countdownTask?.cancel()
         preloadTask?.cancel()
+        pendingSkipFlushTask?.cancel()
     }
 }

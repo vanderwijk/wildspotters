@@ -16,6 +16,7 @@ struct IdentificationView: View {
     @State private var isLeaderboardPresented = false
     @State private var fullscreenVideoURL: URL?
     @State private var isVideoZoomed = false
+    @State private var didRunInitialLoad = false
     var pendingSpotID: Int? = nil
     var onSpotDeepLinkConsumed: () -> Void = {}
 
@@ -137,8 +138,10 @@ struct IdentificationView: View {
                 .task(id: pendingSpotID) {
                     if let spotID = pendingSpotID {
                         await viewModel.loadSpot(byID: spotID)
+                        didRunInitialLoad = true
                         onSpotDeepLinkConsumed()
-                    } else {
+                    } else if !didRunInitialLoad {
+                        didRunInitialLoad = true
                         await viewModel.loadInitial()
                     }
                 }
