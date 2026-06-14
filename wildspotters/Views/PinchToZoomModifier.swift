@@ -11,61 +11,83 @@ struct PinchToZoomModifier: ViewModifier {
     @State private var lastOffset: CGSize = .zero
 
     func body(content: Content) -> some View {
-        content
-            .scaleEffect(currentScale)
-            .offset(offset)
-            .overlay(
-                // A transparent overlay carries the gesture recognizers. Attaching
-                // gestures directly to a UIViewRepresentable (the video layer) is
-                // unreliable, since its underlying UIView doesn't reliably forward
-                // touches to SwiftUI's gesture system.
-                Color.clear
-                    .contentShape(Rectangle())
-                    .gesture(
-                        MagnificationGesture()
-                            .onChanged { value in
-                                let newScale = lastScale * value
-                                currentScale = min(max(newScale, 1), maxScale)
-                            }
-                            .onEnded { _ in
-                                lastScale = currentScale
-                                if currentScale == 1 {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                        offset = .zero
-                                    }
-                                    lastOffset = .zero
+        GeometryReader { proxy in
+            let size = proxy.size
+
+            content
+                .scaleEffect(currentScale)
+                .offset(offset)
+                .overlay(
+                    // A transparent overlay carries the gesture recognizers. Attaching
+                    // gestures directly to a UIViewRepresentable (the video layer) is
+                    // unreliable, since its underlying UIView doesn't reliably forward
+                    // touches to SwiftUI's gesture system.
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .gesture(
+                            MagnificationGesture()
+                                .onChanged { value in
+                                    let newScale = lastScale * value
+                                    currentScale = min(max(newScale, 1), maxScale)
+                                    offset = clampedOffset(offset, scale: currentScale, size: size)
                                 }
-                            }
-                    )
-                    .simultaneousGesture(
-                        DragGesture()
-                            .onChanged { value in
-                                guard currentScale > 1 else { return }
-                                offset = CGSize(
-                                    width: lastOffset.width + value.translation.width,
-                                    height: lastOffset.height + value.translation.height
-                                )
-                            }
-                            .onEnded { _ in
-                                guard currentScale > 1 else { return }
+                                .onEnded { _ in
+                                    lastScale = currentScale
+                                    offset = clampedOffset(offset, scale: currentScale, size: size)
+                                    lastOffset = offset
+                                    if currentScale == 1 {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            offset = .zero
+                                        }
+                                        lastOffset = .zero
+                                    }
+                                }
+                        )
+                        .simultaneousGesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    guard currentScale > 1 else { return }
+                                    let proposed = CGSize(
+                                        width: lastOffset.width + value.translation.width,
+                                        height: lastOffset.height + value.translation.height
+                                    )
+                                    offset = clampedOffset(proposed, scale: currentScale, size: size)
+                                }
+                                .onEnded { _ in
+                                    guard currentScale > 1 else { return }
+                                    lastOffset = offset
+                                }
+                        )
+                        .onTapGesture(count: 2) {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                if currentScale > 1 {
+                                    currentScale = 1
+                                    lastScale = 1
+                                    offset = .zero
+                                } else {
+                                    currentScale = 2
+                                    lastScale = 2
+                                    offset = clampedOffset(offset, scale: 2, size: size)
+                                }
                                 lastOffset = offset
                             }
-                    )
-                    .onTapGesture(count: 2) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                            if currentScale > 1 {
-                                currentScale = 1
-                                lastScale = 1
-                            } else {
-                                currentScale = 2
-                                lastScale = 2
-                            }
-                            offset = .zero
-                            lastOffset = .zero
                         }
-                    }
-            )
-            .clipped()
+                )
+                .clipped()
+        }
+    }
+
+    /// Keeps the scaled content covering the full frame — no edge can be dragged
+    /// inward past the frame boundary, so there's never empty space at the
+    /// top/bottom/left/right while zoomed in.
+    private func clampedOffset(_ proposed: CGSize, scale: CGFloat, size: CGSize) -> CGSize {
+        let maxOffsetX = max(0, (size.width * (scale - 1)) / 2)
+        let maxOffsetY = max(0, (size.height * (scale - 1)) / 2)
+
+        return CGSize(
+            width: min(max(proposed.width, -maxOffsetX), maxOffsetX),
+            height: min(max(proposed.height, -maxOffsetY), maxOffsetY)
+        )
     }
 }
 
