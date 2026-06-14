@@ -4,6 +4,7 @@ import SwiftUI
 /// Used by the inline video player and the fullscreen video player (6.1).
 struct PinchToZoomModifier: ViewModifier {
     let maxScale: CGFloat
+    var isZoomed: Binding<Bool> = .constant(false)
 
     @State private var currentScale: CGFloat = 1
     @State private var lastScale: CGFloat = 1
@@ -30,6 +31,7 @@ struct PinchToZoomModifier: ViewModifier {
                                     let newScale = lastScale * value
                                     currentScale = min(max(newScale, 1), maxScale)
                                     offset = clampedOffset(offset, scale: currentScale, size: size)
+                                    isZoomed.wrappedValue = currentScale > 1
                                 }
                                 .onEnded { _ in
                                     lastScale = currentScale
@@ -41,6 +43,7 @@ struct PinchToZoomModifier: ViewModifier {
                                         }
                                         lastOffset = .zero
                                     }
+                                    isZoomed.wrappedValue = currentScale > 1
                                 }
                         )
                         .simultaneousGesture(
@@ -71,6 +74,7 @@ struct PinchToZoomModifier: ViewModifier {
                                 }
                                 lastOffset = offset
                             }
+                            isZoomed.wrappedValue = currentScale > 1
                         }
                 )
                 .clipped()
@@ -93,7 +97,9 @@ struct PinchToZoomModifier: ViewModifier {
 
 extension View {
     /// Pinch-to-zoom up to `maxScale`, pan while zoomed, double-tap to toggle zoom.
-    func pinchToZoom(maxScale: CGFloat = 4) -> some View {
-        modifier(PinchToZoomModifier(maxScale: maxScale))
+    /// `isZoomed` is updated to reflect whether the content is currently zoomed in,
+    /// so callers can disable conflicting gestures (e.g. swipe-to-next) while zoomed.
+    func pinchToZoom(maxScale: CGFloat = 4, isZoomed: Binding<Bool> = .constant(false)) -> some View {
+        modifier(PinchToZoomModifier(maxScale: maxScale, isZoomed: isZoomed))
     }
 }

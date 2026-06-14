@@ -15,6 +15,7 @@ struct IdentificationView: View {
     @State private var isProfileDrawerPresented = false
     @State private var isLeaderboardPresented = false
     @State private var fullscreenVideoURL: URL?
+    @State private var isVideoZoomed = false
     var pendingSpotID: Int? = nil
     var onSpotDeepLinkConsumed: () -> Void = {}
 
@@ -288,7 +289,7 @@ struct IdentificationView: View {
                     isActive: !isPreview && !viewModel.isAdvancing && !viewModel.isSpotInfoPanelVisible
                         && (isPreviousSpot ? true : !viewModel.isPanelVisible)
                 )
-                .pinchToZoom(maxScale: 4)
+                .pinchToZoom(maxScale: 4, isZoomed: isPreview || isPreviousSpot ? .constant(false) : $isVideoZoomed)
                 .accessibilityLabel(String(localized: "accessibility.videoPlayer"))
 
                 if !isPreview {
@@ -346,6 +347,13 @@ struct IdentificationView: View {
         .contentShape(Rectangle())
         .simultaneousGesture(nextSpotSwipeGesture(containerWidth: containerWidth))
         .allowsHitTesting(!viewModel.isAdvancing)
+        .onChange(of: spot.id) { _, _ in
+            // A new spot always starts unzoomed, so make sure swiping isn't left
+            // disabled if the previous spot's video was zoomed when we navigated away.
+            if !isPreview && !isPreviousSpot {
+                isVideoZoomed = false
+            }
+        }
         .animation(.interactiveSpring(response: 0.22, dampingFraction: 0.86), value: swipeTranslation)
         .animation(.interactiveSpring(response: 0.22, dampingFraction: 0.86), value: committedSwipeOffset)
         .animation(.interactiveSpring(response: 0.22, dampingFraction: 0.86), value: previousSpotTransitionOffset)
@@ -487,6 +495,7 @@ struct IdentificationView: View {
             && !viewModel.isSpotInfoPanelVisible
             && !viewModel.isAdvancing
             && !isPreviousSpotTransitionActive
+            && !isVideoZoomed
             && committedSwipeSpotID == nil
 
         if viewModel.isShowingPreviousSpot {
