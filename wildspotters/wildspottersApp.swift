@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct WildspottersApp: App {
 
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var authManager = AuthManager.shared
     @State private var showLogin = false

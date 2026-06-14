@@ -51,6 +51,52 @@
         }
       }
     },
+    "accessibility.fullscreenVideo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fullscreen video"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video op volledig scherm"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video im Vollbildmodus"
+          }
+        }
+      }
+    },
+    "accessibility.closeFullscreenVideo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close fullscreen video"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video op volledig scherm sluiten"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vollbildvideo schließen"
+          }
+        }
+      }
+    },
     "activation.failed": {
       "extractionState": "manual",
       "localizations": {

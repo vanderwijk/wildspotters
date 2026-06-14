@@ -14,6 +14,7 @@ struct IdentificationView: View {
     @State private var speciesTapResetTask: Task<Void, Never>?
     @State private var isProfileDrawerPresented = false
     @State private var isLeaderboardPresented = false
+    @State private var fullscreenVideoURL: URL?
     var pendingSpotID: Int? = nil
     var onSpotDeepLinkConsumed: () -> Void = {}
 
@@ -117,6 +118,20 @@ struct IdentificationView: View {
                 }
                 .sheet(isPresented: $isProfileDrawerPresented) {
                     ProfileDrawerView(authManager: authManager)
+                }
+                .fullScreenCover(
+                    isPresented: Binding(
+                        get: { fullscreenVideoURL != nil },
+                        set: { isPresented in
+                            if !isPresented { fullscreenVideoURL = nil }
+                        }
+                    )
+                ) {
+                    if let url = fullscreenVideoURL {
+                        FullscreenVideoPlayerView(url: url) {
+                            fullscreenVideoURL = nil
+                        }
+                    }
                 }
                 .task(id: pendingSpotID) {
                     if let spotID = pendingSpotID {
@@ -267,13 +282,31 @@ struct IdentificationView: View {
         let highlightedSpeciesID = isPreviousSpot ? viewModel.previousChosenSpeciesID : viewModel.currentChosenSpeciesID
 
         return VStack(spacing: 0) {
-            VideoPlayerView(
-                url: spot.videoURL,
-                isActive: !isPreview && !viewModel.isAdvancing && !viewModel.isSpotInfoPanelVisible
-                    && (isPreviousSpot ? true : !viewModel.isPanelVisible)
-            )
+            ZStack(alignment: .topTrailing) {
+                VideoPlayerView(
+                    url: spot.videoURL,
+                    isActive: !isPreview && !viewModel.isAdvancing && !viewModel.isSpotInfoPanelVisible
+                        && (isPreviousSpot ? true : !viewModel.isPanelVisible)
+                )
+                .pinchToZoom(maxScale: 4)
+                .accessibilityLabel(String(localized: "accessibility.videoPlayer"))
+
+                if !isPreview {
+                    Button {
+                        fullscreenVideoURL = spot.videoURL
+                    } label: {
+                        Image(systemName: "arrow.up.left.and.arrow.down.right")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .padding(8)
+                            .background(.black.opacity(0.35), in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .padding(8)
+                    .accessibilityLabel(String(localized: "accessibility.fullscreenVideo"))
+                }
+            }
             .aspectRatio(16/9, contentMode: .fit)
-            .accessibilityLabel(String(localized: "accessibility.videoPlayer"))
 
             ScrollView {
                 VStack(spacing: 12) {
