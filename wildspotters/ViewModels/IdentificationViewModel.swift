@@ -239,14 +239,19 @@ final class IdentificationViewModel: ObservableObject {
         errorMessage = nil
         isEmpty = false
 
+        async let catalogRefresh: () = catalogStore.refresh()
+
         do {
             if let spot = try await apiClient.fetchSpot(id: spotID) {
+                _ = await catalogRefresh
                 showSpot(spot)
                 preloadNextSpot()
             } else {
+                _ = await catalogRefresh
                 showEmptyState()
             }
         } catch {
+            _ = await catalogRefresh
             errorMessage = error.localizedDescription
         }
     }

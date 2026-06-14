@@ -15,6 +15,7 @@ struct IdentificationView: View {
     @State private var isProfileDrawerPresented = false
     @State private var isLeaderboardPresented = false
     var pendingSpotID: Int? = nil
+    var onSpotDeepLinkConsumed: () -> Void = {}
 
     private let swipeCommitThreshold: CGFloat = 72
     // Grass (50) + icon bar (40 + 2×12 padding) + a little breathing room.
@@ -120,6 +121,7 @@ struct IdentificationView: View {
                 .task(id: pendingSpotID) {
                     if let spotID = pendingSpotID {
                         await viewModel.loadSpot(byID: spotID)
+                        onSpotDeepLinkConsumed()
                     } else {
                         await viewModel.loadInitial()
                     }
