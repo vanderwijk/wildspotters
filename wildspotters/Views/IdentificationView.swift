@@ -294,21 +294,6 @@ struct IdentificationView: View {
                 )
                 .pinchToZoom(maxScale: 4, isZoomed: isPreview || isPreviousSpot ? .constant(false) : $isVideoZoomed)
                 .accessibilityLabel(String(localized: "accessibility.videoPlayer"))
-
-                if !isPreview {
-                    Button {
-                        fullscreenVideoURL = spot.videoURL
-                    } label: {
-                        Image(systemName: "arrow.up.left.and.arrow.down.right")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .padding(8)
-                            .background(.black.opacity(0.35), in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .padding(8)
-                    .accessibilityLabel(String(localized: "accessibility.fullscreenVideo"))
-                }
             }
             .aspectRatio(16/9, contentMode: .fit)
 

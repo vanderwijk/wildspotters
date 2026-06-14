@@ -9,6 +9,11 @@ final class AuthManager: ObservableObject {
     @Published private(set) var isRestoringSession: Bool
 
     private var hasCompletedInitialRestore = false
+    private var lastActiveValidation: Date?
+
+    /// Minimum interval between foreground session re-validations, to avoid
+    /// hitting `/profile` on every brief app switch.
+    private static let activeValidationMinInterval: TimeInterval = 60
 
     private init() {
         isRestoringSession = KeychainService.getToken() != nil
@@ -31,12 +36,18 @@ final class AuthManager: ObservableObject {
     }
 
     /// Re-validates the active session when the app returns to the foreground.
+    /// Throttled so brief app switches don't each trigger a `/profile` call.
     func validateActiveSessionIfNeeded() async {
         guard isAuthenticated, !isRestoringSession else { return }
         guard KeychainService.getToken() != nil else {
             logout()
             return
         }
+
+        if let lastActiveValidation, Date().timeIntervalSince(lastActiveValidation) < Self.activeValidationMinInterval {
+            return
+        }
+        lastActiveValidation = Date()
 
         if await performSessionCheck() == .invalid {
             logout()
@@ -77,6 +88,7 @@ final class AuthManager: ObservableObject {
         KeychainService.deleteToken()
         isAuthenticated = false
         isRestoringSession = false
+        lastActiveValidation = nil
     }
 
     private enum SessionCheckResult {
@@ -99,6 +111,7 @@ final class AuthManager: ObservableObject {
         switch outcome {
         case .valid, .unreachable:
             isAuthenticated = true
+            lastActiveValidation = Date()
         case .invalid:
             logout()
         }
