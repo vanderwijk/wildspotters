@@ -14,49 +14,57 @@ struct PinchToZoomModifier: ViewModifier {
         content
             .scaleEffect(currentScale)
             .offset(offset)
-            .gesture(
-                MagnificationGesture()
-                    .onChanged { value in
-                        let newScale = lastScale * value
-                        currentScale = min(max(newScale, 1), maxScale)
-                    }
-                    .onEnded { _ in
-                        lastScale = currentScale
-                        if currentScale == 1 {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                offset = .zero
+            .overlay(
+                // A transparent overlay carries the gesture recognizers. Attaching
+                // gestures directly to a UIViewRepresentable (the video layer) is
+                // unreliable, since its underlying UIView doesn't reliably forward
+                // touches to SwiftUI's gesture system.
+                Color.clear
+                    .contentShape(Rectangle())
+                    .gesture(
+                        MagnificationGesture()
+                            .onChanged { value in
+                                let newScale = lastScale * value
+                                currentScale = min(max(newScale, 1), maxScale)
                             }
+                            .onEnded { _ in
+                                lastScale = currentScale
+                                if currentScale == 1 {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                        offset = .zero
+                                    }
+                                    lastOffset = .zero
+                                }
+                            }
+                    )
+                    .simultaneousGesture(
+                        DragGesture()
+                            .onChanged { value in
+                                guard currentScale > 1 else { return }
+                                offset = CGSize(
+                                    width: lastOffset.width + value.translation.width,
+                                    height: lastOffset.height + value.translation.height
+                                )
+                            }
+                            .onEnded { _ in
+                                guard currentScale > 1 else { return }
+                                lastOffset = offset
+                            }
+                    )
+                    .onTapGesture(count: 2) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            if currentScale > 1 {
+                                currentScale = 1
+                                lastScale = 1
+                            } else {
+                                currentScale = 2
+                                lastScale = 2
+                            }
+                            offset = .zero
                             lastOffset = .zero
                         }
                     }
             )
-            .simultaneousGesture(
-                DragGesture()
-                    .onChanged { value in
-                        guard currentScale > 1 else { return }
-                        offset = CGSize(
-                            width: lastOffset.width + value.translation.width,
-                            height: lastOffset.height + value.translation.height
-                        )
-                    }
-                    .onEnded { _ in
-                        guard currentScale > 1 else { return }
-                        lastOffset = offset
-                    }
-            )
-            .onTapGesture(count: 2) {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    if currentScale > 1 {
-                        currentScale = 1
-                        lastScale = 1
-                    } else {
-                        currentScale = 2
-                        lastScale = 2
-                    }
-                    offset = .zero
-                    lastOffset = .zero
-                }
-            }
             .clipped()
     }
 }
