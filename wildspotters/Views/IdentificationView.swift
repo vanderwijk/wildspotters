@@ -12,7 +12,7 @@ struct IdentificationView: View {
     @State private var previousSpotTransitionOffset: CGFloat = 0
     @State private var suppressSpeciesTap = false
     @State private var speciesTapResetTask: Task<Void, Never>?
-    @State private var isProfileDrawerPresented = false
+    @State private var isMenuPresented = false
     @State private var isLeaderboardPresented = false
     @State private var isOpeningSpot = false
     @State private var fullscreenVideoURL: URL?
@@ -113,15 +113,15 @@ struct IdentificationView: View {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             viewModel.closeSpotInfoPanel()
-                            isProfileDrawerPresented = true
+                            isMenuPresented = true
                         } label: {
-                            Image(systemName: "person.crop.circle")
+                            Image(systemName: "line.3.horizontal")
                                 .font(.title3.weight(.semibold))
                                 .frame(width: 34, height: 34)
                         }
                         .buttonStyle(.plain)
                         .foregroundStyle(Color("BrandDarkGray"))
-                        .accessibilityLabel(String(localized: "accessibility.openProfile"))
+                        .accessibilityLabel(String(localized: "accessibility.openMenu"))
                     }
                 }
                 .sheet(isPresented: $isLeaderboardPresented) {
@@ -134,8 +134,8 @@ struct IdentificationView: View {
                         }
                     )
                 }
-                .sheet(isPresented: $isProfileDrawerPresented) {
-                    ProfileDrawerView(authManager: authManager)
+                .sheet(isPresented: $isMenuPresented) {
+                    MenuView(authManager: authManager)
                 }
                 .fullScreenCover(
                     isPresented: Binding(

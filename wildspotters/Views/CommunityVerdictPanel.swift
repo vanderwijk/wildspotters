@@ -130,9 +130,8 @@ struct CommunityVerdictPanel: View {
     private var selectedSpeciesImage: some View {
         if let panel {
             speciesImage(url: panel.selectedSpecies.imageURL)
-        } else if let species = selectedSpecies,
-                  let catalogItem = catalogStore.species[species.id] {
-            speciesImage(url: catalogItem.imageURL)
+        } else if let species = selectedSpecies {
+            speciesImage(url: species.imageURL ?? catalogStore.species[species.id]?.imageURL)
         } else {
             speciesPlaceholder
         }

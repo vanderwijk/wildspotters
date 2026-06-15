@@ -2948,6 +2948,98 @@
           }
         }
       }
+    },
+    "menu.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wildspotters"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wildspotters"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wildspotters"
+          }
+        }
+      }
+    },
+    "menu.about.text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wildspotters is an initiative by [Dutch Wallfish](https://dutchwallfish.nl/), design by [Studio Harm Hasenaar](https://studioharmhasenaar.nl/), technical implementation by [VanderWijk Consultancy](https://vanderwijk.nl/) and camera management by [AXITEC](https://axitec.nl/)."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wildspotters is een initiatief van [Dutch Wallfish](https://dutchwallfish.nl/), ontwerp door [Studio Harm Hasenaar](https://studioharmhasenaar.nl/), technische implementatie door [VanderWijk Consultancy](https://vanderwijk.nl/) en camerabeheer door [AXITEC](https://axitec.nl/)."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wildspotters ist eine Initiative von [Dutch Wallfish](https://dutchwallfish.nl/), Design von [Studio Harm Hasenaar](https://studioharmhasenaar.nl/), technische Umsetzung von [VanderWijk Consultancy](https://vanderwijk.nl/) und Kameramanagement von [AXITEC](https://axitec.nl/)."
+          }
+        }
+      }
+    },
+    "menu.profile.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My profile"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mijn profiel"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mein Profil"
+          }
+        }
+      }
+    },
+    "menu.profile.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name, email, password"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Naam, e-mail, wachtwoord"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name, E-Mail, Passwort"
+          }
+        }
+      }
     }
   },
   "version": "1.1"
