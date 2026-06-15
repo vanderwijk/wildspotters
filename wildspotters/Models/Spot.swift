@@ -3,6 +3,7 @@ import Foundation
 protocol LocalizedSpeciesNameProviding {
     var name: String { get }
     var englishName: String? { get }
+    var germanName: String? { get }
 }
 
 extension LocalizedSpeciesNameProviding {
@@ -10,6 +11,9 @@ extension LocalizedSpeciesNameProviding {
         let preferredLanguage = Bundle.main.preferredLocalizations.first ?? "en"
         if preferredLanguage.hasPrefix("nl") {
             return name
+        }
+        if preferredLanguage.hasPrefix("de") {
+            return germanName ?? englishName ?? name
         }
         return englishName ?? name
     }
@@ -89,11 +93,15 @@ struct SpotLocation: Decodable {
     let name: String
     let slug: String
     let description: String?
+    let descriptionEN: String?
+    let descriptionDE: String?
     let marker: SpotLocationMarker?
     let commonSpecies: [Species]
 
     enum CodingKeys: String, CodingKey {
         case id, name, slug, description, marker
+        case descriptionEN = "description_en"
+        case descriptionDE = "description_de"
         case commonSpecies = "common_species"
     }
 
@@ -103,8 +111,28 @@ struct SpotLocation: Decodable {
         name = try container.decode(String.self, forKey: .name)
         slug = try container.decode(String.self, forKey: .slug)
         description = try container.decodeIfPresent(String.self, forKey: .description)
+        descriptionEN = try container.decodeIfPresent(String.self, forKey: .descriptionEN)
+        descriptionDE = try container.decodeIfPresent(String.self, forKey: .descriptionDE)
         marker = try container.decodeIfPresent(SpotLocationMarker.self, forKey: .marker)
         commonSpecies = try container.decodeIfPresent([Species].self, forKey: .commonSpecies) ?? []
+    }
+
+    /// Description text in the app's current language, falling back to the
+    /// Dutch description (and then English) when no translation is set.
+    var localizedDescription: String? {
+        let preferredLanguage = Bundle.main.preferredLocalizations.first ?? "en"
+        if preferredLanguage.hasPrefix("nl") {
+            return description
+        }
+        if preferredLanguage.hasPrefix("de") {
+            return nonEmpty(descriptionDE) ?? nonEmpty(descriptionEN) ?? description
+        }
+        return nonEmpty(descriptionEN) ?? description
+    }
+
+    private func nonEmpty(_ value: String?) -> String? {
+        guard let value, !value.isEmpty else { return nil }
+        return value
     }
 }
 
@@ -118,13 +146,15 @@ struct Species: Decodable, Identifiable, Hashable, LocalizedSpeciesNameProviding
     let name: String
     let scientificName: String?
     let englishName: String?
+    let germanName: String?
     let imageURL: URL?
 
     enum CodingKeys: String, CodingKey {
         case id
         case name
         case scientificName = "scientific_name"
-        case englishName = "english_name"
+        case englishName = "name_en"
+        case germanName = "name_de"
         case imageURL = "image_url"
     }
 

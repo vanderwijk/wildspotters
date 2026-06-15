@@ -8,10 +8,29 @@ struct DrilldownRow: View {
     let title: String
     var subtitle: String?
     var systemImage: String?
+    var avatarURL: URL?
 
     var body: some View {
         HStack(spacing: 12) {
-            if let systemImage {
+            if let avatarURL {
+                AsyncImage(url: avatarURL) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    case .failure:
+                        leadingSystemImage
+                    default:
+                        Color("BrandDarkGreen").opacity(0.08)
+                    }
+                }
+                .frame(width: 28, height: 28)
+                .clipShape(Circle())
+                .overlay(
+                    Circle().stroke(Color("BrandLightGreen").opacity(0.55), lineWidth: 1)
+                )
+            } else if let systemImage {
                 Image(systemName: systemImage)
                     .font(.body.weight(.semibold))
                     .foregroundStyle(Color("BrandDarkGreen"))
@@ -49,6 +68,18 @@ struct DrilldownRow: View {
                 .stroke(Color("BrandDarkGreen").opacity(0.08), lineWidth: 1)
         )
         .contentShape(Rectangle())
+    }
+
+    @ViewBuilder
+    private var leadingSystemImage: some View {
+        if let systemImage {
+            Image(systemName: systemImage)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(Color("BrandDarkGreen"))
+                .frame(width: 28, height: 28)
+        } else {
+            Color("BrandDarkGreen").opacity(0.08)
+        }
     }
 }
 

@@ -378,7 +378,7 @@ struct SpotInfoTray: View {
                                 .stroke(Color("BrandDarkGreen").opacity(0.12), lineWidth: 1)
                         )
 
-                    if let description = location.description, !description.isEmpty {
+                    if let description = location.localizedDescription, !description.isEmpty {
                         Text(description)
                             .font(.subheadline)
                             .foregroundStyle(.white.opacity(0.82))

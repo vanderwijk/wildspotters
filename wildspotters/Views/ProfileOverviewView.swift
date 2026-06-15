@@ -221,7 +221,7 @@ struct ProfileOverviewView: View {
                     }
                 }
 
-                Text(item.name)
+                Text(item.displayName)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(Color("BrandDarkGray"))
                     .multilineTextAlignment(.center)
@@ -233,8 +233,8 @@ struct ProfileOverviewView: View {
         .disabled(viewModel.updatingAvatarSpeciesID != nil)
         .accessibilityLabel(
             item.isCurrentAvatar
-                ? String(localized: "profileOverview.collection.currentAvatar \(item.name)")
-                : String(localized: "profileOverview.collection.setAvatar \(item.name)")
+                ? String(localized: "profileOverview.collection.currentAvatar \(item.displayName)")
+                : String(localized: "profileOverview.collection.setAvatar \(item.displayName)")
         )
     }
 

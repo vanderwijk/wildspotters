@@ -40,6 +40,7 @@ final class ProfileOverviewViewModel: ObservableObject {
                     name: item.name,
                     scientificName: item.scientificName,
                     englishName: item.englishName,
+                    germanName: item.germanName,
                     imageURL: item.imageURL,
                     isCurrentAvatar: item.speciesID == speciesID
                 )

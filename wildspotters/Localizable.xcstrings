@@ -2995,6 +2995,98 @@
         }
       }
     },
+    "menu.partners.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Founding municipalities"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilotgemeenten"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilotgemeinden"
+          }
+        }
+      }
+    },
+    "menu.partners.text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wildspotters is made possible by the municipalities of Almere, Amersfoort and Apeldoorn."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wildspotters wordt mogelijk gemaakt door de gemeenten Almere, Amersfoort en Apeldoorn."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wildspotters wird ermöglicht durch die Gemeinden Almere, Amersfoort und Apeldoorn."
+          }
+        }
+      }
+    },
+    "menu.join.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get involved"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doe ook mee"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mitmachen"
+          }
+        }
+      }
+    },
+    "menu.join.text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Does your municipality manage wildlife crossings and would you like to show them to residents, helping grow awareness of wildlife? Send an email to [mark@dutchwallfish.nl](mailto:mark@dutchwallfish.nl)."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beheert uw gemeente wildpassages en wilt u die graag laten zien aan inwoners, zodat de aandacht voor wilde dieren groeit? Stuur dan een e-mail naar [mark@dutchwallfish.nl](mailto:mark@dutchwallfish.nl)."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verwaltet Ihre Gemeinde Wildtierpassagen und möchten Sie diese den Bürgern zeigen, um das Bewusstsein für Wildtiere zu stärken? Schreiben Sie eine E-Mail an [mark@dutchwallfish.nl](mailto:mark@dutchwallfish.nl)."
+          }
+        }
+      }
+    },
     "menu.profile.title": {
       "extractionState": "manual",
       "localizations": {

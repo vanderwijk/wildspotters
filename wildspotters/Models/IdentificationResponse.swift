@@ -23,12 +23,14 @@ struct PanelSpecies: Decodable, LocalizedSpeciesNameProviding {
     let name: String
     let scientificName: String?
     let englishName: String?
+    let germanName: String?
     let imageURL: URL?
 
     enum CodingKeys: String, CodingKey {
         case id, name
         case scientificName = "scientific_name"
-        case englishName = "english_name"
+        case englishName = "name_en"
+        case germanName = "name_de"
         case imageURL = "image_url"
     }
 
@@ -40,13 +42,15 @@ struct CommunitySpeciesStat: Decodable, Identifiable, LocalizedSpeciesNameProvid
     let name: String
     let scientificName: String?
     let englishName: String?
+    let germanName: String?
     let percentage: Double
     let imageURL: URL?
 
     enum CodingKeys: String, CodingKey {
         case id, name, percentage
         case scientificName = "scientific_name"
-        case englishName = "english_name"
+        case englishName = "name_en"
+        case germanName = "name_de"
         case imageURL = "image_url"
     }
 

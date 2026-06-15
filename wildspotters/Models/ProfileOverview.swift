@@ -21,11 +21,12 @@ struct ProfileStats: Decodable, Sendable {
     }
 }
 
-struct ProfileCollectionItem: Decodable, Sendable, Identifiable {
+struct ProfileCollectionItem: Decodable, Sendable, Identifiable, LocalizedSpeciesNameProviding {
     let speciesID: Int
     let name: String
     let scientificName: String?
     let englishName: String?
+    let germanName: String?
     let imageURL: URL?
     let isCurrentAvatar: Bool
 
@@ -35,10 +36,13 @@ struct ProfileCollectionItem: Decodable, Sendable, Identifiable {
         case speciesID = "species_id"
         case name
         case scientificName = "scientific_name"
-        case englishName = "english_name"
+        case englishName = "name_en"
+        case germanName = "name_de"
         case imageURL = "image_url"
         case isCurrentAvatar = "is_current_avatar"
     }
+
+    var displayName: String { localizedDisplayName }
 }
 
 struct ProfileLikedSpot: Decodable, Sendable, Identifiable {
