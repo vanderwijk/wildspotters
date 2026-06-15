@@ -4,6 +4,7 @@ struct LeaderboardView: View {
 
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = LeaderboardViewModel()
+    @Binding var isPresented: Bool
 
     var body: some View {
         NavigationStack {
@@ -105,6 +106,15 @@ struct LeaderboardView: View {
     }
 
     private func currentUserCard(_ user: LeaderboardCurrentUser) -> some View {
+        NavigationLink {
+            ProfileOverviewView(isLeaderboardPresented: $isPresented)
+        } label: {
+            currentUserCardContent(user)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func currentUserCardContent(_ user: LeaderboardCurrentUser) -> some View {
         HStack(spacing: 14) {
             avatarView(url: user.avatarURL, name: user.name)
                 .frame(width: 56, height: 56)
@@ -139,6 +149,10 @@ struct LeaderboardView: View {
 
                 scoreValue(user.formattedScore)
             }
+
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color("BrandDarkGray").opacity(0.38))
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 14)
@@ -350,6 +364,6 @@ struct LeaderboardView: View {
 
 struct LeaderboardView_Previews: PreviewProvider {
     static var previews: some View {
-        LeaderboardView()
+        LeaderboardView(isPresented: .constant(true))
     }
 }

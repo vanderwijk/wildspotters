@@ -294,6 +294,28 @@ final class APIClient: Sendable {
         )
     }
 
+    // MARK: - Profile overview
+
+    func fetchProfileOverview() async throws -> ProfileOverviewResponse {
+        try await get("profile/overview", authenticated: true)
+    }
+
+    func setProfileAvatar(speciesID: Int) async throws -> ProfileAvatar? {
+        struct SetAvatarRequest: Encodable {
+            let speciesID: Int
+            enum CodingKeys: String, CodingKey {
+                case speciesID = "species_id"
+            }
+        }
+
+        let response: SetAvatarResponse = try await post(
+            "profile/avatar",
+            body: SetAvatarRequest(speciesID: speciesID),
+            authenticated: true
+        )
+        return response.avatar
+    }
+
     // MARK: - Catalog
 
     func fetchSpeciesCatalog(ifNoneMatch etag: String?) async throws -> SpeciesCatalogFetchResult {

@@ -116,7 +116,7 @@ struct IdentificationView: View {
                     }
                 }
                 .sheet(isPresented: $isLeaderboardPresented) {
-                    LeaderboardView()
+                    LeaderboardView(isPresented: $isLeaderboardPresented)
                 }
                 .sheet(isPresented: $isProfileDrawerPresented) {
                     ProfileDrawerView(authManager: authManager)
