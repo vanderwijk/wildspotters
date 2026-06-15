@@ -9,6 +9,7 @@ struct ProfileOverviewView: View {
     @StateObject private var viewModel = ProfileOverviewViewModel()
     @Environment(\.dismiss) private var dismiss
     @Binding var isLeaderboardPresented: Bool
+    @State private var isOpeningSpot = false
 
     private let columns = [
         GridItem(.adaptive(minimum: 88, maximum: 120), spacing: 12)
@@ -32,6 +33,10 @@ struct ProfileOverviewView: View {
                 } else if let overview = viewModel.overview {
                     contentView(overview)
                 }
+            }
+
+            if isOpeningSpot {
+                openingSpotOverlay
             }
         }
         .navigationTitle(String(localized: "profileOverview.title"))
@@ -252,11 +257,13 @@ struct ProfileOverviewView: View {
             openSpot(spot)
         } label: {
             VStack(alignment: .leading, spacing: 6) {
-                spotThumbnail(url: spot.thumbnailURL)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 130)
-                    .clipped()
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                GeometryReader { geometry in
+                    spotThumbnail(url: spot.thumbnailURL)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .clipped()
+                }
+                .frame(height: 130)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
 
                 if !spot.title.isEmpty {
                     Text(spot.title)
@@ -272,6 +279,7 @@ struct ProfileOverviewView: View {
                         .lineLimit(1)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 2)
             .contentShape(Rectangle())
         }
@@ -280,11 +288,28 @@ struct ProfileOverviewView: View {
 
     private func openSpot(_ spot: ProfileLikedSpot) {
         guard let url = spot.deeplink else { return }
+        isOpeningSpot = true
         dismiss()
         isLeaderboardPresented = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             UIApplication.shared.open(url)
         }
+    }
+
+    private var openingSpotOverlay: some View {
+        ZStack {
+            Color("BrandBeige")
+                .ignoresSafeArea()
+
+            VStack(spacing: 12) {
+                ProgressView()
+                    .tint(Color("BrandGreen"))
+                Text("profileOverview.openingSpot")
+                    .font(.subheadline)
+                    .foregroundStyle(Color("BrandDarkGray").opacity(0.72))
+            }
+        }
+        .transition(.opacity)
     }
 
     // MARK: - Shared components

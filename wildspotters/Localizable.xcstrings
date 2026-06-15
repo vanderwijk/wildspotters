@@ -2650,6 +2650,29 @@
         }
       }
     },
+    "profileOverview.openingSpot": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opening spot…"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spot wordt geopend…"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spot wird geöffnet…"
+          }
+        }
+      }
+    },
     "profileOverview.statsSection": {
       "extractionState": "manual",
       "localizations": {
@@ -2702,19 +2725,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Confirmation rate"
+            "value": "Accuracy"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bevestigingspercentage"
+            "value": "Juiste keuzes"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bestätigungsquote"
+            "value": "Trefferquote"
           }
         }
       }
