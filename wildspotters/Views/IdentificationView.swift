@@ -18,8 +18,7 @@ struct IdentificationView: View {
     @State private var fullscreenVideoURL: URL?
     @State private var isVideoZoomed = false
     @State private var didRunInitialLoad = false
-    var pendingSpotID: Int? = nil
-    var onSpotDeepLinkConsumed: () -> Void = {}
+    @Binding var pendingSpotID: Int?
 
     private let swipeCommitThreshold: CGFloat = 72
     // Grass (50) + icon bar (40 + 2×12 padding) + a little breathing room.
@@ -37,7 +36,9 @@ struct IdentificationView: View {
                         }
 
                     Group {
-                        if viewModel.isLoading && viewModel.currentSpot == nil {
+                        if isOpeningSpot {
+                            Color.clear
+                        } else if viewModel.isLoading && viewModel.currentSpot == nil {
                             ProgressView(String(localized: "identification.loading"))
                                 .tint(Color("BrandDarkGreen"))
                                 .foregroundStyle(Color("BrandDarkGray"))
@@ -74,6 +75,8 @@ struct IdentificationView: View {
                         footerBar
                     }
                     .zIndex(8)
+                    .opacity(isOpeningSpot ? 0 : 1)
+                    .allowsHitTesting(!isOpeningSpot)
 
                     if isOpeningSpot {
                         openingSpotOverlay
@@ -122,7 +125,14 @@ struct IdentificationView: View {
                     }
                 }
                 .sheet(isPresented: $isLeaderboardPresented) {
-                    LeaderboardView(isPresented: $isLeaderboardPresented, isOpeningSpot: $isOpeningSpot)
+                    LeaderboardView(
+                        isPresented: $isLeaderboardPresented,
+                        isOpeningSpot: $isOpeningSpot,
+                        onOpenSpot: { spotID in
+                            isOpeningSpot = true
+                            pendingSpotID = spotID
+                        }
+                    )
                 }
                 .sheet(isPresented: $isProfileDrawerPresented) {
                     ProfileDrawerView(authManager: authManager)
@@ -143,22 +153,29 @@ struct IdentificationView: View {
                 }
                 .task(id: pendingSpotID) {
                     if let spotID = pendingSpotID {
+                        isOpeningSpot = true
                         await viewModel.loadSpot(byID: spotID)
                         didRunInitialLoad = true
                         isOpeningSpot = false
-                        onSpotDeepLinkConsumed()
+                        pendingSpotID = nil
                     } else if !didRunInitialLoad {
                         didRunInitialLoad = true
                         await viewModel.loadInitial()
                     }
                 }
+                .onChange(of: pendingSpotID) { _, newValue in
+                    if newValue != nil {
+                        isOpeningSpot = true
+                    }
+                }
                 .onChange(of: isOpeningSpot) { _, newValue in
                     guard newValue else { return }
-                    // Failsafe: clear the overlay even if no deeplink ever
-                    // arrives (e.g. the spot no longer exists).
+                    // Failsafe: clear the overlay even if loading never completes.
                     Task {
-                        try? await Task.sleep(nanoseconds: 3_000_000_000)
-                        isOpeningSpot = false
+                        try? await Task.sleep(nanoseconds: 8_000_000_000)
+                        if isOpeningSpot {
+                            isOpeningSpot = false
+                        }
                     }
                 }
                 .onDisappear {
@@ -324,8 +341,7 @@ struct IdentificationView: View {
             ZStack(alignment: .topTrailing) {
                 VideoPlayerView(
                     url: spot.videoURL,
-                    isActive: !isPreview && !viewModel.isAdvancing && !viewModel.isSpotInfoPanelVisible
-                        && (isPreviousSpot ? true : !viewModel.isPanelVisible)
+                    isActive: !isPreview && !viewModel.isAdvancing && !viewModel.isVideoPlaybackBlocked
                 )
                 .pinchToZoom(maxScale: 4, isZoomed: isPreview || isPreviousSpot ? .constant(false) : $isVideoZoomed)
                 .accessibilityLabel(String(localized: "accessibility.videoPlayer"))
@@ -638,6 +654,6 @@ struct IdentificationView: View {
 
 struct IdentificationView_Previews: PreviewProvider {
     static var previews: some View {
-        IdentificationView(authManager: AuthManager.shared)
+        IdentificationView(authManager: AuthManager.shared, pendingSpotID: .constant(nil))
     }
 }

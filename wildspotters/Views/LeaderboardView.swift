@@ -6,6 +6,7 @@ struct LeaderboardView: View {
     @StateObject private var viewModel = LeaderboardViewModel()
     @Binding var isPresented: Bool
     @Binding var isOpeningSpot: Bool
+    var onOpenSpot: (Int) -> Void = { _ in }
 
     var body: some View {
         NavigationStack {
@@ -111,6 +112,7 @@ struct LeaderboardView: View {
             ProfileOverviewView(
                 isLeaderboardPresented: $isPresented,
                 isOpeningSpot: $isOpeningSpot,
+                onOpenSpot: onOpenSpot,
                 onAvatarChanged: {
                     Task { await viewModel.load() }
                 }

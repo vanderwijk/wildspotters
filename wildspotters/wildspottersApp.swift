@@ -10,7 +10,6 @@ struct WildspottersApp: App {
     @State private var activationSuccessMessage: String? = nil
     @State private var passwordResetRequest: PasswordResetRequest? = nil
     @State private var pendingSpotID: Int? = nil
-    @State private var consumedSpotDeepLink = false
 
     var body: some Scene {
         WindowGroup {
@@ -20,11 +19,7 @@ struct WildspottersApp: App {
                 } else if authManager.isAuthenticated {
                     IdentificationView(
                         authManager: authManager,
-                        pendingSpotID: consumedSpotDeepLink ? nil : pendingSpotID,
-                        onSpotDeepLinkConsumed: {
-                            consumedSpotDeepLink = true
-                            pendingSpotID = nil
-                        }
+                        pendingSpotID: $pendingSpotID
                     )
                 } else if showLogin {
                     LoginView(
@@ -62,7 +57,6 @@ struct WildspottersApp: App {
             }
             .onOpenURL { url in
                 if let spotID = Self.spotID(from: url) {
-                    consumedSpotDeepLink = false
                     pendingSpotID = spotID
                     return
                 }

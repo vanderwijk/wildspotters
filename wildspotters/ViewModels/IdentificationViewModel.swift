@@ -134,7 +134,16 @@ final class IdentificationViewModel: ObservableObject {
         if isShowingPreviousSpot {
             return isSpotInfoPanelVisible
         }
-        return isPanelVisible || isSpotInfoPanelVisible
+
+        if isSpotInfoPanelVisible {
+            return true
+        }
+
+        if case .submitting = panelState {
+            return true
+        }
+
+        return shouldShowCommunityVerdictPanel
     }
 
     // MARK: - Previous-spot buffer

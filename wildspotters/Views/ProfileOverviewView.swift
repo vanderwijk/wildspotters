@@ -10,6 +10,7 @@ struct ProfileOverviewView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var isLeaderboardPresented: Bool
     @Binding var isOpeningSpot: Bool
+    var onOpenSpot: (Int) -> Void = { _ in }
     var onAvatarChanged: (() -> Void)? = nil
 
     private let columns = [
@@ -293,13 +294,10 @@ struct ProfileOverviewView: View {
     }
 
     private func openSpot(_ spot: ProfileLikedSpot) {
-        guard let url = spot.deeplink else { return }
         isOpeningSpot = true
+        onOpenSpot(spot.spotID)
         dismiss()
         isLeaderboardPresented = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            UIApplication.shared.open(url)
-        }
     }
 
 
