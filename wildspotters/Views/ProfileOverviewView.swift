@@ -9,7 +9,7 @@ struct ProfileOverviewView: View {
     @StateObject private var viewModel = ProfileOverviewViewModel()
     @Environment(\.dismiss) private var dismiss
     @Binding var isLeaderboardPresented: Bool
-    @State private var isOpeningSpot = false
+    @Binding var isOpeningSpot: Bool
 
     private let columns = [
         GridItem(.adaptive(minimum: 88, maximum: 120), spacing: 12)
@@ -33,10 +33,6 @@ struct ProfileOverviewView: View {
                 } else if let overview = viewModel.overview {
                     contentView(overview)
                 }
-            }
-
-            if isOpeningSpot {
-                openingSpotOverlay
             }
         }
         .navigationTitle(String(localized: "profileOverview.title"))
@@ -85,7 +81,7 @@ struct ProfileOverviewView: View {
 
     private func contentView(_ overview: ProfileOverviewResponse) -> some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 18) {
+            LazyVStack(alignment: .leading, spacing: 32) {
                 statsSection(overview.stats)
                 collectionSection(overview)
                 likesSection(overview.likes)
@@ -158,6 +154,10 @@ struct ProfileOverviewView: View {
     private func collectionSection(_ overview: ProfileOverviewResponse) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             sectionTitle(String(localized: "profileOverview.collectionSection"), systemImage: "pawprint")
+
+            Text("profileOverview.collection.hint")
+                .font(.caption)
+                .foregroundStyle(Color("BrandDarkGray").opacity(0.62))
 
             if let avatarErrorMessage = viewModel.avatarErrorMessage {
                 Text(avatarErrorMessage)
@@ -296,21 +296,6 @@ struct ProfileOverviewView: View {
         }
     }
 
-    private var openingSpotOverlay: some View {
-        ZStack {
-            Color("BrandBeige")
-                .ignoresSafeArea()
-
-            VStack(spacing: 12) {
-                ProgressView()
-                    .tint(Color("BrandGreen"))
-                Text("profileOverview.openingSpot")
-                    .font(.subheadline)
-                    .foregroundStyle(Color("BrandDarkGray").opacity(0.72))
-            }
-        }
-        .transition(.opacity)
-    }
 
     // MARK: - Shared components
 
@@ -390,7 +375,7 @@ struct ProfileOverviewView: View {
 struct ProfileOverviewView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            ProfileOverviewView(isLeaderboardPresented: .constant(true))
+            ProfileOverviewView(isLeaderboardPresented: .constant(true), isOpeningSpot: .constant(false))
         }
     }
 }

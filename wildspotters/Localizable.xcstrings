@@ -2725,19 +2725,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Accuracy"
+            "value": "Agreement"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Juiste keuzes"
+            "value": "Overeenstemming"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Trefferquote"
+            "value": "Übereinstimmung"
           }
         }
       }
@@ -2807,6 +2807,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gesammelte Arten"
+          }
+        }
+      }
+    },
+    "profileOverview.collection.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap a species to set it as your profile picture."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tik op een soort om deze als profielfoto in te stellen."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tippe auf eine Tierart, um sie als Profilbild festzulegen."
           }
         }
       }

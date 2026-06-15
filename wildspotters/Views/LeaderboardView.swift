@@ -5,6 +5,7 @@ struct LeaderboardView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = LeaderboardViewModel()
     @Binding var isPresented: Bool
+    @Binding var isOpeningSpot: Bool
 
     var body: some View {
         NavigationStack {
@@ -107,7 +108,7 @@ struct LeaderboardView: View {
 
     private func currentUserCard(_ user: LeaderboardCurrentUser) -> some View {
         NavigationLink {
-            ProfileOverviewView(isLeaderboardPresented: $isPresented)
+            ProfileOverviewView(isLeaderboardPresented: $isPresented, isOpeningSpot: $isOpeningSpot)
         } label: {
             currentUserCardContent(user)
         }
@@ -364,6 +365,6 @@ struct LeaderboardView: View {
 
 struct LeaderboardView_Previews: PreviewProvider {
     static var previews: some View {
-        LeaderboardView(isPresented: .constant(true))
+        LeaderboardView(isPresented: .constant(true), isOpeningSpot: .constant(false))
     }
 }

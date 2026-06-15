@@ -14,6 +14,7 @@ struct IdentificationView: View {
     @State private var speciesTapResetTask: Task<Void, Never>?
     @State private var isProfileDrawerPresented = false
     @State private var isLeaderboardPresented = false
+    @State private var isOpeningSpot = false
     @State private var fullscreenVideoURL: URL?
     @State private var isVideoZoomed = false
     @State private var didRunInitialLoad = false
@@ -73,6 +74,11 @@ struct IdentificationView: View {
                         footerBar
                     }
                     .zIndex(8)
+
+                    if isOpeningSpot {
+                        openingSpotOverlay
+                            .zIndex(20)
+                    }
                 }
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbarBackground(Color("BrandBeige").opacity(0.9), for: .navigationBar)
@@ -116,7 +122,7 @@ struct IdentificationView: View {
                     }
                 }
                 .sheet(isPresented: $isLeaderboardPresented) {
-                    LeaderboardView(isPresented: $isLeaderboardPresented)
+                    LeaderboardView(isPresented: $isLeaderboardPresented, isOpeningSpot: $isOpeningSpot)
                 }
                 .sheet(isPresented: $isProfileDrawerPresented) {
                     ProfileDrawerView(authManager: authManager)
@@ -139,10 +145,20 @@ struct IdentificationView: View {
                     if let spotID = pendingSpotID {
                         await viewModel.loadSpot(byID: spotID)
                         didRunInitialLoad = true
+                        isOpeningSpot = false
                         onSpotDeepLinkConsumed()
                     } else if !didRunInitialLoad {
                         didRunInitialLoad = true
                         await viewModel.loadInitial()
+                    }
+                }
+                .onChange(of: isOpeningSpot) { _, newValue in
+                    guard newValue else { return }
+                    // Failsafe: clear the overlay even if no deeplink ever
+                    // arrives (e.g. the spot no longer exists).
+                    Task {
+                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        isOpeningSpot = false
                     }
                 }
                 .onDisappear {
@@ -151,6 +167,24 @@ struct IdentificationView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Opening spot overlay
+
+    private var openingSpotOverlay: some View {
+        ZStack {
+            Color("BrandBeige")
+                .ignoresSafeArea()
+
+            VStack(spacing: 12) {
+                ProgressView()
+                    .tint(Color("BrandGreen"))
+                Text("profileOverview.openingSpot")
+                    .font(.subheadline)
+                    .foregroundStyle(Color("BrandDarkGray").opacity(0.72))
+            }
+        }
+        .transition(.opacity)
     }
 
     // MARK: - Keyboard
