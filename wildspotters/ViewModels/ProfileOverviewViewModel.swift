@@ -24,9 +24,9 @@ final class ProfileOverviewViewModel: ObservableObject {
         }
     }
 
-    func setAvatar(speciesID: Int) async {
-        guard let overview, updatingAvatarSpeciesID == nil else { return }
-        guard overview.collection.first(where: { $0.speciesID == speciesID })?.isCurrentAvatar != true else { return }
+    func setAvatar(speciesID: Int) async -> Bool {
+        guard let overview, updatingAvatarSpeciesID == nil else { return false }
+        guard overview.collection.first(where: { $0.speciesID == speciesID })?.isCurrentAvatar != true else { return false }
 
         updatingAvatarSpeciesID = speciesID
         avatarErrorMessage = nil
@@ -50,8 +50,10 @@ final class ProfileOverviewViewModel: ObservableObject {
                 collection: updatedCollection,
                 likes: overview.likes
             )
+            return true
         } catch {
             avatarErrorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            return false
         }
     }
 }

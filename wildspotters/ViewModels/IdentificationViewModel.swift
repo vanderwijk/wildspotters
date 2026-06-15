@@ -344,9 +344,21 @@ final class IdentificationViewModel: ObservableObject {
         currentSpot = spot
         appendRecentSpotID(spot.id)
         resetSpotInfoState(for: spot)
-        isCommunityVerdictPanelHidden = false
+        applyExistingIdentification(from: spot)
         isEmpty = false
         errorMessage = nil
+    }
+
+    /// Restore highlight / verdict state when reopening a spot the user already identified.
+    private func applyExistingIdentification(from spot: Spot) {
+        guard let identification = spot.userIdentification, let panel = identification.panel else {
+            panelState = .hidden
+            isCommunityVerdictPanelHidden = false
+            return
+        }
+
+        panelState = .showing(panel)
+        isCommunityVerdictPanelHidden = true
     }
 
     private func appendRecentSpotID(_ spotID: Int) {

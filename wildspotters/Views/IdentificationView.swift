@@ -318,6 +318,7 @@ struct IdentificationView: View {
     private func spotContent(_ spot: Spot, isPreview: Bool = false, isPreviousSpot: Bool = false, containerWidth: CGFloat) -> some View {
         let selectionEnabled = isPreviousSpot ? isPreviousSpeciesSelectionEnabled : isSpeciesSelectionEnabled
         let highlightedSpeciesID = isPreviousSpot ? viewModel.previousChosenSpeciesID : viewModel.currentChosenSpeciesID
+        let videoAllowsSwipe = !isPreview && (isPreviousSpot || !isVideoZoomed)
 
         return VStack(spacing: 0) {
             ZStack(alignment: .topTrailing) {
@@ -330,6 +331,12 @@ struct IdentificationView: View {
                 .accessibilityLabel(String(localized: "accessibility.videoPlayer"))
             }
             .aspectRatio(16/9, contentMode: .fit)
+            .modifier(
+                ConditionalSwipeGesture(
+                    isEnabled: videoAllowsSwipe,
+                    gesture: nextSpotSwipeGesture(containerWidth: containerWidth)
+                )
+            )
 
             ScrollView {
                 VStack(spacing: 12) {
@@ -362,12 +369,17 @@ struct IdentificationView: View {
                 .padding(.vertical, 16)
             }
             .scrollDisabled(isSwipeTransitionActive)
+            .modifier(
+                ConditionalSwipeGesture(
+                    isEnabled: !isPreview,
+                    gesture: nextSpotSwipeGesture(containerWidth: containerWidth)
+                )
+            )
         }
         .background(Color("BrandBeige"))
         .offset(x: isPreview ? 0 : cardOffset)
         .opacity(isPreview ? 1 : cardOpacity)
         .contentShape(Rectangle())
-        .simultaneousGesture(nextSpotSwipeGesture(containerWidth: containerWidth))
         .allowsHitTesting(!viewModel.isAdvancing)
         .onChange(of: spot.id) { _, _ in
             // A new spot always starts unzoomed, so make sure swiping isn't left
@@ -379,6 +391,20 @@ struct IdentificationView: View {
         .animation(.interactiveSpring(response: 0.22, dampingFraction: 0.86), value: swipeTranslation)
         .animation(.interactiveSpring(response: 0.22, dampingFraction: 0.86), value: committedSwipeOffset)
         .animation(.interactiveSpring(response: 0.22, dampingFraction: 0.86), value: previousSpotTransitionOffset)
+    }
+
+    /// Attaches a swipe gesture only when enabled, so zoomed video does not block swipes on the species grid.
+    private struct ConditionalSwipeGesture<G: Gesture>: ViewModifier {
+        let isEnabled: Bool
+        let gesture: G
+
+        func body(content: Content) -> some View {
+            if isEnabled {
+                content.simultaneousGesture(gesture)
+            } else {
+                content
+            }
+        }
     }
 
     private func nextSpotSwipeGesture(containerWidth: CGFloat) -> some Gesture {
@@ -517,7 +543,6 @@ struct IdentificationView: View {
             && !viewModel.isSpotInfoPanelVisible
             && !viewModel.isAdvancing
             && !isPreviousSpotTransitionActive
-            && !isVideoZoomed
             && committedSwipeSpotID == nil
 
         if viewModel.isShowingPreviousSpot {

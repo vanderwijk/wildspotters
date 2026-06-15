@@ -40,6 +40,7 @@ struct Spot: Decodable, Identifiable {
     let commentCount: Int
     let favoriteCount: Int
     let isFavorited: Bool
+    let userIdentification: SpotUserIdentification?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -49,6 +50,7 @@ struct Spot: Decodable, Identifiable {
         case commentCount = "comment_count"
         case favoriteCount = "favorite_count"
         case isFavorited = "is_favorited"
+        case userIdentification = "user_identification"
     }
 
     init(from decoder: Decoder) throws {
@@ -68,6 +70,17 @@ struct Spot: Decodable, Identifiable {
         commentCount = try container.decodeIfPresent(Int.self, forKey: .commentCount) ?? 0
         favoriteCount = try container.decodeIfPresent(Int.self, forKey: .favoriteCount) ?? 0
         isFavorited = try container.decodeIfPresent(Bool.self, forKey: .isFavorited) ?? false
+        userIdentification = try container.decodeIfPresent(SpotUserIdentification.self, forKey: .userIdentification)
+    }
+}
+
+struct SpotUserIdentification: Decodable {
+    let speciesID: Int
+    let panel: IdentificationPanel?
+
+    enum CodingKeys: String, CodingKey {
+        case speciesID = "species_id"
+        case panel
     }
 }
 

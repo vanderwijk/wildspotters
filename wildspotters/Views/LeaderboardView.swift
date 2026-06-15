@@ -108,7 +108,13 @@ struct LeaderboardView: View {
 
     private func currentUserCard(_ user: LeaderboardCurrentUser) -> some View {
         NavigationLink {
-            ProfileOverviewView(isLeaderboardPresented: $isPresented, isOpeningSpot: $isOpeningSpot)
+            ProfileOverviewView(
+                isLeaderboardPresented: $isPresented,
+                isOpeningSpot: $isOpeningSpot,
+                onAvatarChanged: {
+                    Task { await viewModel.load() }
+                }
+            )
         } label: {
             currentUserCardContent(user)
         }

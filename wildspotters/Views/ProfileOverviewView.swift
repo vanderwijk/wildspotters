@@ -10,6 +10,7 @@ struct ProfileOverviewView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var isLeaderboardPresented: Bool
     @Binding var isOpeningSpot: Bool
+    var onAvatarChanged: (() -> Void)? = nil
 
     private let columns = [
         GridItem(.adaptive(minimum: 88, maximum: 120), spacing: 12)
@@ -185,7 +186,11 @@ struct ProfileOverviewView: View {
         let isUpdating = viewModel.updatingAvatarSpeciesID == item.speciesID
 
         return Button {
-            Task { await viewModel.setAvatar(speciesID: item.speciesID) }
+            Task {
+                if await viewModel.setAvatar(speciesID: item.speciesID) {
+                    onAvatarChanged?()
+                }
+            }
         } label: {
             VStack(spacing: 6) {
                 ZStack(alignment: .topTrailing) {
