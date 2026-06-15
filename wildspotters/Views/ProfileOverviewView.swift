@@ -39,6 +39,7 @@ struct ProfileOverviewView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Color("BrandBeige"), for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(.light, for: .navigationBar)
         .task {
             await viewModel.load()
         }
