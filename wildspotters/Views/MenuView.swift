@@ -101,7 +101,7 @@ struct MenuView: View {
         attributedMarkdown(String(localized: "menu.about.text"))
     }
 
-    /// "Pilotgemeenten" card listing the founding municipalities, with their
+    /// "Launching partners" card listing the founding municipalities, with their
     /// logos shown side by side when available.
     private var partnersSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -109,9 +109,10 @@ struct MenuView: View {
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(Color("BrandDarkGreen"))
 
-            Text(String(localized: "menu.partners.text"))
+            Text(attributedMarkdown(String(localized: "menu.partners.text")))
                 .font(.subheadline)
                 .foregroundStyle(Color("BrandDarkGray"))
+                .tint(Color("BrandGreen"))
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -137,7 +138,7 @@ struct MenuView: View {
             .filter { UIImage(named: $0) != nil }
     }
 
-    /// "Doe ook mee" card inviting municipalities to get in touch.
+    /// "Doe ook mee" card inviting organisations to get in touch.
     private var joinSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(String(localized: "menu.join.title"))
