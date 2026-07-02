@@ -341,7 +341,11 @@ struct IdentificationView: View {
             ZStack(alignment: .topTrailing) {
                 VideoPlayerView(
                     url: spot.videoURL,
-                    isActive: !isPreview && !viewModel.isAdvancing && !viewModel.isVideoPlaybackBlocked
+                    isActive: !isPreview
+                        && !viewModel.isAdvancing
+                        && !viewModel.isVideoPlaybackBlocked
+                        && !isMenuPresented
+                        && !isLeaderboardPresented
                 )
                 .pinchToZoom(maxScale: 4, isZoomed: isPreview || isPreviousSpot ? .constant(false) : $isVideoZoomed)
                 .accessibilityLabel(String(localized: "accessibility.videoPlayer"))

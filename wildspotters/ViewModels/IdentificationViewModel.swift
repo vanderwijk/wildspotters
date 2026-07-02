@@ -131,14 +131,6 @@ final class IdentificationViewModel: ObservableObject {
     /// True when video playback for the spot currently on screen should be
     /// paused (an overlay panel covers it, or we're mid-transition).
     var isVideoPlaybackBlocked: Bool {
-        if isShowingPreviousSpot {
-            return isSpotInfoPanelVisible
-        }
-
-        if isSpotInfoPanelVisible {
-            return true
-        }
-
         if case .submitting = panelState {
             return true
         }
