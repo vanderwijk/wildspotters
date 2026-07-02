@@ -209,11 +209,17 @@ private final class LocalSpeciesImageCache {
 
     private let cache = NSCache<NSNumber, UIImage>()
 
+    private init() {
+        cache.countLimit = 60
+        cache.totalCostLimit = 30 * 1024 * 1024
+    }
+
     func image(for speciesID: Int) -> UIImage? {
         cache.object(forKey: NSNumber(value: speciesID))
     }
 
     func insert(_ image: UIImage, for speciesID: Int) {
-        cache.setObject(image, forKey: NSNumber(value: speciesID))
+        let cost = Int(image.size.width * image.size.height * 4)
+        cache.setObject(image, forKey: NSNumber(value: speciesID), cost: cost)
     }
 }

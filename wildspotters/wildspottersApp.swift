@@ -5,7 +5,7 @@ struct WildspottersApp: App {
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
-    @StateObject private var authManager = AuthManager.shared
+    @ObservedObject private var authManager = AuthManager.shared
     @State private var showLogin = false
     @State private var activationSuccessMessage: String? = nil
     @State private var passwordResetRequest: PasswordResetRequest? = nil

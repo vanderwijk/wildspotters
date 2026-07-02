@@ -8,7 +8,7 @@ struct FullscreenVideoPlayerView: View {
     let url: URL
     let onClose: () -> Void
 
-    @StateObject private var orientation = OrientationManager.shared
+    @ObservedObject private var orientation = OrientationManager.shared
 
     var body: some View {
         ZStack(alignment: .topTrailing) {

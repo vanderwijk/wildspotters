@@ -6,6 +6,9 @@ import AVFoundation
 final class PlayerCache {
     static let shared = PlayerCache()
 
+    /// Current, previous, and preloaded spots — evict beyond this when idle.
+    private static let maxEntries = 3
+
     private struct CacheEntry {
         let player: AVPlayer
         let observer: Any
@@ -15,6 +18,18 @@ final class PlayerCache {
     }
 
     private var entries: [URL: CacheEntry] = [:]
+
+    private init() {
+        Self.configureAudioSession()
+    }
+
+    private static func configureAudioSession() {
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
+        } catch {
+            // Audio session config is best-effort; video still plays.
+        }
+    }
 
     func retainPlayer(for url: URL) -> AVPlayer {
         var entry = entry(for: url)
@@ -70,6 +85,8 @@ final class PlayerCache {
             return existing
         }
 
+        evictIdleEntriesIfNeeded()
+
         let item = AVPlayerItem(url: url)
         let player = AVPlayer(playerItem: item)
         player.automaticallyWaitsToMinimizeStalling = false
@@ -90,7 +107,27 @@ final class PlayerCache {
     }
 
     private func removeEntryIfUnused(for url: URL) {
-        guard let entry = entries[url], entry.activeReferences == 0, !entry.isPrepared else { return }
+        guard let entry = entries[url],
+              entry.activeReferences == 0,
+              entry.activePlaybackClaims == 0,
+              !entry.isPrepared else { return }
+        tearDownEntry(for: url, entry: entry)
+    }
+
+    private func evictIdleEntriesIfNeeded() {
+        guard entries.count >= Self.maxEntries else { return }
+
+        let idleKeys = entries.filter { _, entry in
+            entry.activeReferences == 0 && entry.activePlaybackClaims == 0 && !entry.isPrepared
+        }.map(\.key)
+
+        for key in idleKeys where entries.count >= Self.maxEntries {
+            guard let entry = entries[key] else { continue }
+            tearDownEntry(for: key, entry: entry)
+        }
+    }
+
+    private func tearDownEntry(for url: URL, entry: CacheEntry) {
         entry.player.pause()
         NotificationCenter.default.removeObserver(entry.observer)
         entries.removeValue(forKey: url)
@@ -137,20 +174,11 @@ final class PlayerUIView: UIView {
         avPlayerLayer.videoGravity = .resizeAspect
         backgroundColor = .black
         isUserInteractionEnabled = false
-        configureAudioSession()
         observeAppLifecycle()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    private func configureAudioSession() {
-        do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
-        } catch {
-            // Audio session config is best-effort; video still plays
-        }
     }
 
     private func observeAppLifecycle() {
