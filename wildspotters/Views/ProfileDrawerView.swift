@@ -389,7 +389,8 @@ struct ProfileDrawerView: View {
                     withAnimation {
                         showDeleteForm = true
                     }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    Task {
+                        try? await Task.sleep(for: .milliseconds(150))
                         focusedField = .deletePassword
                     }
                 } label: {
